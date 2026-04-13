@@ -33,7 +33,7 @@ Ho cercato risorse in italiano che spiegassero questa transizione in modo dirett
 
 ## Vuoi contribuire?
 
-Questo è un progetto collaborativo. Se sai più di me (e probabilmente è così! :)) il tuo contributo è prezioso.
+Questo è un progetto collaborativo. Se sai più di me — e probabilmente è così — il tuo contributo è prezioso.
 
 ### Cosa sarebbe utile
 
@@ -58,7 +58,7 @@ Non serve essere esperti di GitHub. Anche una Issue scritta in italiano con "ho 
 Il progetto è pubblicato su **GitHub Pages** all'indirizzo:
 
 ```
-https://carolcogo.github.io/abm-netlogo-python/
+https://CarolinaCrespi.github.io/abm-netlogo-python/
 ```
 
 ---
@@ -70,7 +70,8 @@ abm-netlogo-python/
 ├── README.md
 ├── index.html          ← guida passo-passo: da NetLogo a Python
 ├── dizionario.html     ← glossario termini con confronto NetLogo / Python
-└── og-image.png        ← anteprima social
+├── og-preview.html     ← apri nel browser e fai screenshot per generare og-image.png
+└── og-image.png        ← anteprima social (da generare da og-preview.html)
 ```
 
 ---
