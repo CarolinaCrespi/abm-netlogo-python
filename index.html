@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Da NetLogo a Python — Guida ai modelli ad agenti</title>
+<meta property="og:title" content="ABMpy — Da NetLogo a Python">
+<meta property="og:description" content="Guida open source per chi viene da NetLogo e vuole imparare a costruire modelli ad agenti in Python. Affianca codice NetLogo e Python spiegando il perché di ogni scelta.">
+<meta property="og:image" content="https://carolcogo.github.io/abm-netlogo-python/og-image.png">
+<meta property="og:url" content="https://carolcogo.github.io/abm-netlogo-python/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ABMpy — Da NetLogo a Python">
+<meta name="twitter:description" content="Guida open source per chi viene da NetLogo e vuole imparare a costruire modelli ad agenti in Python.">
+<meta name="twitter:image" content="https://carolcogo.github.io/abm-netlogo-python/og-image.png">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f7f6f2; --bg2:#fff; --bg3:#f0efe9;
+  --border:#ddd9ce; --text:#1c1a16; --text2:#56544e; --text3:#9b9890;
+  --blue:#1d4ed8; --blue-l:#dbeafe;
+  --nl:#1a3a5c; --nl-l:#e8f0f8; --nl-b:#2563eb;
+  --py:#1a3d2b; --py-l:#e8f5ee; --py-b:#16a34a;
+  --am:#7c3d0a; --am-l:#fef3c7;
+  --fn:'Plus Jakarta Sans',sans-serif; --fm:'Fira Code',monospace;
+  --r:8px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--fn);background:var(--bg);color:var(--text);font-size:15px;line-height:1.65;}
+
+/* NAV */
+nav{background:var(--nl);border-bottom:3px solid var(--nl-b);position:sticky;top:0;z-index:100;}
+.ni{max-width:1060px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;height:52px;gap:1.5rem;}
+.logo{font-size:1.1rem;font-weight:700;color:#fff;letter-spacing:-.02em;white-space:nowrap;}
+.logo span{color:#93c5fd;}
+.navlinks{display:flex;gap:4px;margin-left:auto;}
+.navlink{padding:5px 13px;border-radius:16px;font-size:13px;font-weight:500;color:rgba(255,255,255,.65);text-decoration:none;display:inline-block;transition:all .15s;}
+.navlink:hover{background:rgba(255,255,255,.1);color:#fff;}
+.navlink.active{background:rgba(255,255,255,.15);color:#fff;}
+
+/* LAYOUT */
+.outer{max-width:1060px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:200px 1fr;gap:2.5rem;align-items:start;}
+
+/* TOC */
+.toc{position:sticky;top:72px;}
+.toc-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:10px;}
+.toc-list{list-style:none;}
+.toc-list li{margin-bottom:2px;}
+.toc-link{display:block;padding:6px 10px;border-radius:6px;font-size:13px;color:var(--text2);cursor:pointer;transition:all .15s;text-decoration:none;}
+.toc-link:hover{background:var(--bg3);color:var(--text);}
+.toc-link.active{background:var(--nl);color:#fff;font-weight:500;}
+.toc-divider{height:1px;background:var(--border);margin:10px 0;}
+
+/* CONTENT */
+.section{margin-bottom:3.5rem;scroll-margin-top:72px;}
+.sec-head{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.sec-num{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.sec-title{font-size:1.35rem;font-weight:700;letter-spacing:-.02em;color:var(--text);}
+
+/* PROSE */
+.prose p{font-size:14.5px;line-height:1.8;color:var(--text2);margin-bottom:12px;}
+.prose p strong{color:var(--text);}
+.prose p code{font-family:var(--fm);font-size:12.5px;background:var(--bg3);border:1px solid var(--border);padding:1px 5px;border-radius:4px;color:var(--nl);}
+.note{background:var(--am-l);border-left:4px solid #d97706;border-radius:0 6px 6px 0;padding:12px 14px;margin:12px 0;font-size:13.5px;color:var(--am);line-height:1.65;}
+.note strong{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-bottom:3px;}
+.tip{background:var(--py-l);border-left:4px solid var(--py-b);border-radius:0 6px 6px 0;padding:12px 14px;margin:12px 0;font-size:13.5px;color:var(--py);line-height:1.65;}
+.tip strong{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-bottom:3px;}
+
+/* SIDE BY SIDE */
+.compare{border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin:16px 0;}
+.compare-head{display:grid;grid-template-columns:1fr 1fr;border-bottom:1.5px solid var(--border);}
+.ch-nl{background:var(--nl);color:#fff;padding:8px 14px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;}
+.ch-py{background:var(--py);color:#fff;padding:8px 14px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;}
+.compare-body{display:grid;grid-template-columns:1fr 1fr;}
+.col-nl{background:var(--nl-l);border-right:1.5px solid var(--border);}
+.col-py{background:var(--py-l);}
+.col-nl pre,.col-py pre{font-family:var(--fm);font-size:11.5px;line-height:1.75;padding:14px 16px;margin:0;overflow-x:auto;white-space:pre;}
+.col-nl pre{color:#0f2942;}
+.col-py pre{color:#0d2e1c;}
+.cm{opacity:.45;}
+
+/* SINGLE CODE BLOCK */
+.code-nl{background:var(--nl-l);border:1.5px solid #bcd0e8;border-radius:var(--r);padding:14px 16px;margin:12px 0;font-family:var(--fm);font-size:11.5px;line-height:1.75;color:#0f2942;overflow-x:auto;white-space:pre;}
+.code-py{background:var(--py-l);border:1.5px solid #a7d5bc;border-radius:var(--r);padding:14px 16px;margin:12px 0;font-family:var(--fm);font-size:11.5px;line-height:1.75;color:#0d2e1c;overflow-x:auto;white-space:pre;}
+.code-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+.lnl{color:var(--nl-b);}
+.lpy{color:var(--py-b);}
+
+/* INLINE COMPARISON TABLE */
+.cmp-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px;}
+.cmp-table th{padding:8px 12px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;border-bottom:2px solid var(--border);}
+.cmp-table th:first-child{color:var(--nl-b);}
+.cmp-table th:nth-child(2){color:var(--py-b);}
+.cmp-table th:nth-child(3){color:var(--text3);}
+.cmp-table td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
+.cmp-table td:first-child,.cmp-table td:nth-child(2){font-family:var(--fm);font-size:11.5px;}
+.cmp-table td:first-child{color:var(--nl);background:var(--nl-l);}
+.cmp-table td:nth-child(2){color:var(--py);background:var(--py-l);}
+.cmp-table td:nth-child(3){font-size:12.5px;color:var(--text2);}
+.cmp-table tr:last-child td{border-bottom:none;}
+
+/* MATH BOX */
+.math-box{background:#faf8f5;border:1.5px solid var(--border);border-radius:var(--r);padding:16px;margin:14px 0;}
+.math-box h4{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:10px;}
+.math-row{display:grid;grid-template-columns:160px 1fr;gap:8px;align-items:center;margin-bottom:8px;font-size:13.5px;}
+.math-row:last-child{margin-bottom:0;}
+.math-label{font-family:var(--fm);font-size:12px;color:var(--nl);background:var(--nl-l);padding:3px 8px;border-radius:4px;}
+.math-desc{color:var(--text2);line-height:1.5;}
+
+/* ABM CONCEPT BOX */
+.concept-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0;}
+.concept-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 16px;}
+.concept-card h4{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;}
+.concept-card p{font-size:13px;color:var(--text2);line-height:1.6;}
+.concept-card.c-agent{border-top:3px solid #2563eb;}
+.concept-card.c-env{border-top:3px solid #16a34a;}
+.concept-card.c-rules{border-top:3px solid #d97706;}
+.concept-card.c-emerge{border-top:3px solid #9333ea;}
+
+/* STEP FLOW */
+.flow{display:flex;align-items:center;gap:0;margin:16px 0;flex-wrap:wrap;}
+.flow-step{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r);padding:10px 16px;font-size:13px;font-weight:500;}
+.flow-arrow{font-size:16px;color:var(--text3);padding:0 8px;}
+
+footer{text-align:center;padding:2rem;font-size:12px;color:var(--text3);border-top:1px solid var(--border);margin-top:2rem;}
+@media(max-width:700px){.outer{grid-template-columns:1fr;}.toc{position:static;}.compare-body{grid-template-columns:1fr;}.compare-head{grid-template-columns:1fr;}.concept-grid{grid-template-columns:1fr;}.flow{flex-direction:column;align-items:flex-start;}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="ni">
+    <div class="logo">ABM<span>py</span> &middot; Da NetLogo a Python</div>
+    <div class="navlinks">
+      <a class="navlink active" href="dizionario.html">&#128218; Dizionario SIR</a>
+    </div>
+  </div>
+</nav>
+
+<div class="outer">
+<!-- TOC -->
+<aside class="toc">
+  <div class="toc-label">In questa guida</div>
+  <ul class="toc-list">
+    <li><a class="toc-link active" href="#s0">Cos&rsquo;&egrave; un ABM</a></li>
+    <li><a class="toc-link" href="#s1">Il modello SIR</a></li>
+    <li><a class="toc-link" href="#s2">Struttura del codice</a></li>
+    <li><a class="toc-link" href="#s3">L&rsquo;agente</a></li>
+    <li><a class="toc-link" href="#s4">Spazio e movimento</a></li>
+    <li><a class="toc-link" href="#s5">Il contagio</a></li>
+    <li><a class="toc-link" href="#s6">La guarigione</a></li>
+    <li><a class="toc-link" href="#s7">Il ciclo principale</a></li>
+    <li><a class="toc-link" href="#s8">Dati e visualizzazione</a></li>
+    <li><a class="toc-link" href="#s9">Codice completo</a></li>
+    <li><a class="toc-link" href="#s10">Cosa fare dopo</a></li>
+    <li><a class="toc-link" href="#s11">Costruire un ABM da zero</a></li>
+  </ul>
+  <div class="toc-divider"></div>
+  <div style="font-size:11.5px;color:var(--text3);line-height:1.6;">
+    Ogni sezione affianca il codice NetLogo a sinistra e il codice Python equivalente a destra.
+  </div>
+</aside>
+
+<!-- CONTENT -->
+<main class="content">
+
+<!-- ── OBIETTIVI ── -->
+<div style="background:var(--nl-l);border:1.5px solid #bcd0e8;border-radius:var(--r);padding:18px 20px;margin-bottom:2.5rem;">
+  <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--nl-b);margin-bottom:8px;">Obiettivi di apprendimento</div>
+  <p style="font-size:14px;line-height:1.75;color:var(--text);margin:0 0 12px;">Dopo questa guida saprai <strong>tradurre un modello NetLogo in Python sezione per sezione</strong>: dalla struttura del codice alla gestione degli agenti, dal movimento al contagio, fino alla raccolta dei dati e alla visualizzazione della <strong>curva epidemica SIR</strong>.</p>
+  <div style="padding-top:12px;border-top:1px solid #bcd0e8;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <span style="font-size:12px;color:var(--text2);">Vuoi vedere subito il codice completo?</span>
+    <a href="#s9" style="display:inline-block;padding:5px 14px;background:var(--nl);color:#fff;border-radius:16px;font-size:12px;font-weight:600;text-decoration:none;">&#128196; Vai al codice completo &darr;</a>
+  </div>
+</div>
+
+<!-- ── 00 ── -->
+<div class="section" id="s0">
+  <div class="sec-head">
+    <div class="sec-num" style="background:var(--nl)">00</div>
+    <div class="sec-title">Cos&rsquo;&egrave; un modello ad agenti</div>
+  </div>
+  <div class="prose">
+    <p>Un <strong>modello ad agenti</strong> (ABM, Agent-Based Model) &egrave; una simulazione in cui il comportamento globale emerge dalle interazioni locali di tante entit&agrave; autonome dette <strong>agenti</strong>. Ogni agente ha uno <em>stato interno</em>, percepisce l&rsquo;ambiente circostante e agisce secondo regole semplici. Da queste interazioni locali emergono pattern complessi a livello di sistema &mdash; pattern che non si potrebbero prevedere guardando solo le regole dei singoli agenti.</p>
+    <p>Ogni ABM &egrave; composto da quattro elementi fondamentali:</p>
+  </div>
+
+  <div class="concept-grid">
+    <div class="concept-card c-agent">
+      <h4 style="color:#2563eb;">Agenti</h4>
+      <p>Le entit&agrave; attive della simulazione. Ogni agente ha uno <strong>stato</strong> (es. sano, infetto, guarito) e un insieme di <strong>comportamenti</strong> che esegue ad ogni passo.</p>
+    </div>
+    <div class="concept-card c-env">
+      <h4 style="color:#16a34a;">Ambiente</h4>
+      <p>Lo spazio in cui gli agenti esistono e si muovono. Pu&ograve; essere una griglia discreta, uno spazio continuo 2D, una rete di relazioni, o anche solo un insieme senza geometria.</p>
+    </div>
+    <div class="concept-card c-rules">
+      <h4 style="color:#d97706;">Regole</h4>
+      <p>Cosa fa ogni agente ad ogni tick: come si muove, quando interagisce con altri, come cambia stato. Le regole sono <strong>locali</strong> &mdash; ogni agente vede solo ci&ograve; che &egrave; vicino a lui.</p>
+    </div>
+    <div class="concept-card c-emerge">
+      <h4 style="color:#9333ea;">Emergenza</h4>
+      <p>Il pattern globale che nasce dalle interazioni locali. Non &egrave; scritto da nessuna parte: <strong>emerge</strong> dalla simulazione. &Egrave; ci&ograve; che si vuole studiare o misurare.</p>
+    </div>
+  </div>
+
+  <div class="prose" style="margin-top:20px;">
+    <p><strong>Cosa si modella prima: gli agenti o l&rsquo;ambiente?</strong></p>
+    <p>La risposta &egrave; che si parte sempre dal <strong>fenomeno</strong> che si vuole studiare, non dalla struttura tecnica. Il processo di design segue questo ordine:</p>
+  </div>
+
+  <div class="flow">
+    <div class="flow-step" style="border-top:3px solid #9333ea;">&#10022; Fenomeno<br><span style="font-size:12px;font-weight:400;color:var(--text3);">Cosa vuoi osservare emergere?</span></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step" style="border-top:3px solid #2563eb;">Agenti<br><span style="font-size:12px;font-weight:400;color:var(--text3);">Chi agisce? Che stato ha?</span></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step" style="border-top:3px solid #16a34a;">Ambiente<br><span style="font-size:12px;font-weight:400;color:var(--text3);">In che spazio si muovono?</span></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step" style="border-top:3px solid #d97706;">Regole<br><span style="font-size:12px;font-weight:400;color:var(--text3);">Movimento, interazione, aggiornamento</span></div>
+  </div>
+
+  <div class="tip" style="margin-top:8px;">
+    <strong>Perch&eacute; gli agenti prima dell&rsquo;ambiente</strong>
+    Gli agenti sono le unit&agrave; attive: decidono, interagiscono, cambiano stato. L&rsquo;ambiente &egrave; il palcoscenico &mdash; importante, ma passivo. Definire prima gli agenti (che stato hanno? che decisioni prendono?) aiuta a capire <em>di che ambiente hanno bisogno</em>: uno spazio con posizioni x,y? una griglia? nessuna geometria? I due elementi si co-definiscono, ma il punto di partenza &egrave; sempre l&rsquo;agente.
+  </div>
+
+  <div class="prose" style="margin-top:16px;">
+    <p>NetLogo &egrave; l&rsquo;ambiente pi&ugrave; usato per costruire modelli ad agenti in ambito didattico e di ricerca. Ha un linguaggio semplice e un&rsquo;interfaccia grafica integrata. Python &egrave; il linguaggio di riferimento per la ricerca computazionale moderna: &egrave; molto pi&ugrave; versatile, si integra con librerie di analisi dati e machine learning, ed &egrave; quello che si trova nella maggior parte dei progetti di ricerca.</p>
+    <p>Questa guida mostra come <strong>tradurre un modello ad agenti da NetLogo a Python</strong> usando come esempio il <strong>modello SIR</strong>. Ogni concetto NetLogo viene affiancato al suo equivalente Python, spiegando non solo <em>come</em> si scrive ma <em>perch&eacute;</em>.</p>
+  </div>
+
+</div>
+
+<!-- ── 01 ── -->
+<div class="section" id="s1">
+  <div class="sec-head">
+    <div class="sec-num" style="background:#555">01</div>
+    <div class="sec-title">Il modello SIR</div>
+  </div>
+  <div class="prose">
+    <p>Il <strong>modello SIR</strong> &egrave; il modello epidemiologico pi&ugrave; classico. Ogni agente &egrave; una persona che si trova in uno di tre stati: <strong>S</strong>uscettibile (pu&ograve; ammalarsi), <strong>I</strong>nfetto (pu&ograve; contagiare), <strong>R</strong>imosso (guarito e immune). Gli agenti si muovono nello spazio; quando un infetto incontra un suscettibile entro un certo raggio, lo contagia con una certa probabilit&agrave;. Dopo un numero fisso di tick, l&rsquo;infetto guarisce.</p>
+    <p>Applicando il processo di design visto sopra:</p>
+  </div>
+
+  <table class="cmp-table">
+    <tr><th>Domanda</th><th colspan="2">Risposta nel modello SIR</th></tr>
+    <tr><td style="font-family:var(--fn);color:var(--text);">Fenomeno</td><td style="background:transparent;color:var(--text2);font-family:var(--fn);" colspan="2">Come si diffonde un&rsquo;epidemia? Emerge una curva a campana per i casi attivi?</td></tr>
+    <tr><td style="font-family:var(--fn);color:var(--text);">Agenti</td><td style="background:transparent;color:var(--text2);font-family:var(--fn);" colspan="2">Persone con stato S/I/R, posizione x,y, angolo, timer di infezione</td></tr>
+    <tr><td style="font-family:var(--fn);color:var(--text);">Ambiente</td><td style="background:transparent;color:var(--text2);font-family:var(--fn);" colspan="2">Spazio continuo 2D toroidale (&minus;16 &rarr; +16 su entrambi gli assi)</td></tr>
+    <tr><td style="font-family:var(--fn);color:var(--text);">Regole</td><td style="background:transparent;color:var(--text2);font-family:var(--fn);" colspan="2">Movimento casuale; I contagia S entro raggio con probabilit&agrave; &beta;; dopo N tick I diventa R</td></tr>
+    <tr><td style="font-family:var(--fn);color:var(--text);">Emergenza</td><td style="background:transparent;color:var(--text2);font-family:var(--fn);" colspan="2">Curva epidemica: S scende, I sale poi scende, R sale. L&rsquo;epidemia si esaurisce da sola.</td></tr>
+  </table>
+
+  <div style="display:flex;justify-content:center;margin:20px 0 4px;">
+    <svg width="500" height="110" viewBox="0 0 500 110" font-family="'Plus Jakarta Sans',sans-serif">
+      <defs>
+        <marker id="ab" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#2563eb"/></marker>
+        <marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#dc2626"/></marker>
+      </defs>
+      <circle cx="80"  cy="55" r="42" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+      <text x="80"  y="50" text-anchor="middle" font-size="20" font-weight="700" fill="#1d4ed8">S</text>
+      <text x="80"  y="70" text-anchor="middle" font-size="10.5" fill="#1d4ed8">Suscettibile</text>
+      <circle cx="250" cy="55" r="42" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+      <text x="250" y="50" text-anchor="middle" font-size="20" font-weight="700" fill="#dc2626">I</text>
+      <text x="250" y="70" text-anchor="middle" font-size="10.5" fill="#dc2626">Infetto</text>
+      <circle cx="420" cy="55" r="42" fill="#f3f4f6" stroke="#6b7280" stroke-width="2"/>
+      <text x="420" y="50" text-anchor="middle" font-size="20" font-weight="700" fill="#374151">R</text>
+      <text x="420" y="70" text-anchor="middle" font-size="10.5" fill="#374151">Rimosso</text>
+      <line x1="124" y1="55" x2="204" y2="55" stroke="#2563eb" stroke-width="2" marker-end="url(#ab)"/>
+      <text x="164" y="43" text-anchor="middle" font-size="10" fill="#2563eb">random() &lt; &#946;</text>
+      <text x="164" y="72" text-anchor="middle" font-size="9.5" fill="#888">prob. × raggio</text>
+      <line x1="294" y1="55" x2="374" y2="55" stroke="#dc2626" stroke-width="2" marker-end="url(#ar)"/>
+      <text x="334" y="43" text-anchor="middle" font-size="10" fill="#dc2626">timer &#8805; durata</text>
+      <text x="334" y="72" text-anchor="middle" font-size="9.5" fill="#888">deterministico</text>
+    </svg>
+  </div>
+
+  <div class="prose" style="margin-top:14px;">
+    <p><strong>Regole di transizione degli stati:</strong></p>
+  </div>
+
+  <table class="cmp-table">
+    <tr><th>Transizione</th><th>Condizione</th><th>Nota</th></tr>
+    <tr><td>S &rarr; I</td><td>un agente I &egrave; entro raggio <em>r</em> e <code>random() &lt; &beta;</code></td><td>Probabilistica &mdash; non sempre avviene</td></tr>
+    <tr><td>I &rarr; R</td><td><code>timer_infezione &ge; durata</code></td><td>Deterministica &mdash; dopo un numero fisso di tick</td></tr>
+    <tr><td>R &rarr; R</td><td>&mdash;</td><td>I rimossi sono immuni, non cambiano pi&ugrave; stato</td></tr>
+  </table>
+
+
+</div>
+
+<!-- ── 02 ── -->
+<div class="section" id="s2">
+  <div class="sec-head">
+    <div class="sec-num" style="background:#555">02</div>
+    <div class="sec-title">Struttura del codice</div>
+  </div>
+  <div class="prose">
+    <p>In NetLogo tutto il codice sta in un unico file <code>.nlogo</code>. In Python costruiamo il modello in un unico file <code>sir.py</code>. La struttura &egrave; identica: setup, ciclo principale, procedure. Il SIR prevede tre procedure: <code>muovi</code>, <code>controlla-contagio</code> e <code>aggiorna-stato</code>, che si occupa della guarigione.</p>
+  </div>
+
+  <div class="compare">
+    <div class="compare-head">
+      <div class="ch-nl">NetLogo &mdash; struttura</div>
+      <div class="ch-py">Python &mdash; struttura equivalente</div>
+    </div>
+    <div class="compare-body">
+    <div class="col-nl"><pre>to setup
+  clear-all
+  crea-agenti
+  reset-ticks
+end
+
+to crea-agenti
+  create-turtles num-suscettibili [...]
+  create-turtles num-infetti [...]
+end
+
+to go
+  ask turtles [ move ]
+  ask turtles [ controlla-contagio ]
+  ask turtles [ aggiorna-stato ]
+  if nessun-infetto? [ stop ]
+  tick
+end
+
+to move ... end
+to controlla-contagio ... end
+to aggiorna-stato ... end
+to-report nessun-infetto? ... end</pre></div>
+    <div class="col-py"><pre>def setup(cfg, rng):
+    agenti = crea_agenti(cfg, rng)
+    return agenti
+
+def crea_agenti(cfg, rng):
+    <span class="cm"># equivale a crea-agenti</span>
+    ...
+
+def go(agenti, cfg, rng):
+    for a in agenti:
+        muovi(a, cfg, rng)
+    for a in agenti:
+        controlla_contagio(a, agenti, cfg, rng)
+    for a in agenti:
+        aggiorna_stato(a, cfg)
+    return not nessun_infetto(agenti)
+
+def muovi(a, cfg, rng): ...
+def controlla_contagio(a, tutti, cfg, rng): ...
+def aggiorna_stato(a, cfg): ...
+def nessun_infetto(agenti): ...</pre></div>
+    </div>
+  </div>
+
+
+  <div class="prose" style="margin-top:20px;">
+    <p><strong>I parametri del modello &mdash; da slider a <code>Config</code>:</strong></p>
+    <p>In NetLogo i parametri si impostano tramite slider nell&rsquo;interfaccia grafica. In Python li raccogliamo in una <code>@dataclass</code> chiamata <code>Config</code>. Questo blocco &egrave; il primo che scrivi: definisce tutto ci&ograve; che &egrave; configurabile nel modello.</p>
+  </div>
+  <div class="compare">
+    <div class="compare-head">
+      <div class="ch-nl">NetLogo &mdash; slider</div>
+      <div class="ch-py">Python &mdash; @dataclass Config</div>
+    </div>
+    <div class="compare-body">
+    <div class="col-nl"><pre>num-suscettibili  490  <span class="cm">; slider</span>
+num-infetti        10  <span class="cm">; slider</span>
+prob-infezione    0.3  <span class="cm">; slider (0–1)</span>
+durata-infezione   50  <span class="cm">; slider (tick)</span>
+<span class="cm">; raggio = 1 (hardcoded)</span></pre></div>
+    <div class="col-py"><pre>from dataclasses import dataclass
+
+@dataclass
+class Config:
+    num_S:            int   = 490
+    num_I:            int   = 10
+    prob_infezione:   float = 0.3
+    durata_infezione: int   = 50
+    velocita:         float = 1.0
+    raggio:           float = 1.0
+    L:                float = 16.0
+    seed:             int   = 42</pre></div>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Perch&eacute; Python puro invece di Mesa o AgentPy?</strong>
+    Esistono librerie Python specifiche per i modelli ad agenti (Mesa, AgentPy). Questa guida usa <strong>Python puro con NumPy</strong> perch&eacute; &egrave; pi&ugrave; vicino a come NetLogo funziona internamente: agenti come oggetti, un ciclo esplicito, funzioni che corrispondono alle procedure. Una volta compresa questa base, passare a Mesa diventa molto pi&ugrave; naturale.
+  </div>
+</div>
+
+<!-- ── 03 ── -->
+<div class="section" id="s3">
+  <div class="sec-head">
+    <div class="sec-num" style="background:var(--nl)">03</div>
+    <div class="sec-title">L&rsquo;agente &mdash; da <code>turtles-own</code> a <code>@dataclass</code></div>
+  </div>
+  <div class="prose">
+    <p>In NetLogo ogni agente &egrave; una <strong>turtle</strong> con attributi propri dichiarati in <code>turtles-own</code>. In Python costruiamo un agente come una <strong>dataclass</strong>. L&rsquo;agente SIR ha tre attributi: posizione (<code>x</code>, <code>y</code>), stato epidemico e <code>timer</code>, che conta da quanti tick l&rsquo;agente &egrave; infetto. Serve per sapere quando &egrave; il momento di guarire.</p>
+  </div>
+
+  <div class="compare">
+    <div class="compare-head">
+      <div class="ch-nl">NetLogo</div>
+      <div class="ch-py">Python</div>
+    </div>
+    <div class="compare-body">
+    <div class="col-nl"><pre><span class="cm">; attributi automatici di ogni turtle:</span>
+<span class="cm">; xcor, ycor, heading, color, shape</span>
+<span class="cm">; + quelli che dichiariamo:</span>
+
+turtles-own [
+  stato             <span class="cm">; "S", "I" o "R"</span>
+  timer-infezione   <span class="cm">; tick da quando è infetto</span>
+]
+
+<span class="cm">; creare un agente suscettibile:</span>
+create-turtles num-suscettibili [
+  set stato "S"
+  set color blue
+  set size 2
+  setxy random-xcor random-ycor
+]
+
+<span class="cm">; creare un agente infetto:</span>
+create-turtles num-infetti [
+  set stato "I"
+  set color red
+  set size 2
+  set timer-infezione 0
+  setxy random-xcor random-ycor
+]</pre></div>
+    <div class="col-py"><pre>from dataclasses import dataclass, field
+import math, numpy as np
+
+@dataclass
+class Agente:
+    stato:  str    <span class="cm"># "S", "I" o "R"</span>
+    x:      float  <span class="cm"># equivale a xcor</span>
+    y:      float  <span class="cm"># equivale a ycor</span>
+    angolo: float  <span class="cm"># equivale a heading</span>
+    timer:  int = 0  <span class="cm"># equivale a timer-infezione</span>
+
+<span class="cm"># creare un agente suscettibile:</span>
+Agente(
+    stato  = "S",
+    x      = rng.uniform(-16, 16),
+    y      = rng.uniform(-16, 16),
+    angolo = rng.uniform(0, 2*math.pi),
+    timer  = 0
+)
+
+<span class="cm"># creare un agente infetto:</span>
+Agente(
+    stato  = "I",
+    x      = rng.uniform(-16, 16),
+    y      = rng.uniform(-16, 16),
+    angolo = rng.uniform(0, 2*math.pi),
+    timer  = 0
+)</pre></div>
+    </div>
+  </div>
+
+  <div class="prose" style="margin-top:14px;">
+    <p><strong>Creare tutti gli agenti:</strong></p>
+  </div>
+  <div class="compare">
+    <div class="compare-head">
+      <div class="ch-nl">NetLogo &mdash; crea-agenti</div>
+      <div class="ch-py">Python &mdash; crea_agenti()</div>
+    </div>
+    <div class="compare-body">
+    <div class="col-nl"><pre>to crea-agenti
+  create-turtles num-suscettibili [
+    set stato "S"
+    set color blue
+    set size 2
+    setxy random-xcor random-ycor
+  ]
+  create-turtles num-infetti [
+    set stato "I"
+    set color red
+    set size 2
+    set timer-infezione 0
+    setxy random-xcor random-ycor
+  ]
+end</pre></div>
+    <div class="col-py"><pre>def crea_agenti(cfg, rng):
+    agenti = []                                        <span class="cm"># lista vuota di agenti</span>
+    for stato, n in [("S", cfg.num_S),                <span class="cm"># create-turtles num-suscettibili</span>
+                     ("I", cfg.num_I)]:               <span class="cm"># create-turtles num-infetti</span>
+        for _ in range(n):
+            agenti.append(Agente(
+                stato  = stato,                        <span class="cm"># set stato "S" / "I"</span>
+                x      = rng.uniform(-cfg.L, cfg.L),  <span class="cm"># setxy random-xcor</span>
+                y      = rng.uniform(-cfg.L, cfg.L),  <span class="cm"># setxy random-ycor</span>
+                angolo = rng.uniform(0, 2*math.pi),   <span class="cm"># heading casuale iniziale</span>
+                timer  = 0
+            ))
+    return agenti                                      <span class="cm"># restituisce la lista completa</span></pre></div>
+    </div>
+  </div>
+
+  <!-- spiegazione a parole -->
+  <div style="border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin:14px 0;">
+    <div style="background:var(--bg3);padding:8px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text3);border-bottom:1.5px solid var(--border);">
+      Come si legge a parole
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);">
+      <div style="padding:12px 14px;border-right:1px solid var(--border);font-size:13px;line-height:1.8;color:var(--text2);">
+        <strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--nl-b);margin-bottom:6px;">Riga per riga</strong>
+        <ol style="margin:0;padding-left:1.3em;color:var(--text2);">
+          <li>Parti con una <strong>lista vuota</strong> <code>agenti = []</code>.</li>
+          <li>Considera due gruppi in sequenza: prima i <strong>Suscettibili</strong> ("S"), poi gli <strong>Infetti</strong> ("I").</li>
+          <li>Per ogni gruppo, <strong>ripeti n volte</strong> e aggiungi un agente con stato, posizione e angolo casuali.</li>
+          <li>Alla fine <strong>restituisci la lista</strong> completa.</li>
+        </ol>
+      </div>
+      <div style="padding:12px 14px;font-size:13px;line-height:1.8;color:var(--text2);">
+        <strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--py-b);margin-bottom:6px;">Due costrutti da capire</strong>
+        <p style="margin:0 0 8px;"><strong><code>for stato, n in [(&ldquo;S&rdquo;, cfg.num_S), ...]</code></strong><br>
+        La lista contiene coppie. La virgola spacchetta la coppia: <code>stato</code> riceve la lettera, <code>n</code> riceve il numero. Al primo giro &ldquo;S&rdquo; e num_S, al secondo &ldquo;I&rdquo; e num_I.</p>
+        <p style="margin:0;"><strong><code>for _ in range(n)</code></strong><br>
+        Il trattino basso <code>_</code> significa &ldquo;non mi serve il numero del giro, voglio solo ripetere n volte&rdquo;. &Egrave; il modo Pythonista di dire <em>ignora il contatore</em>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip">
+    <strong>Perch&eacute; @dataclass?</strong>
+    Il decoratore <code>@dataclass</code> genera automaticamente il metodo <code>__init__</code>, cos&igrave; non devi scrivere <code>self.stato = stato</code> ecc. per ogni attributo. Il campo <code>timer: int = 0</code> ha un valore di default: gli agenti suscettibili non lo useranno mai, ma averlo a 0 di default evita di doverlo specificare ogni volta.
+  </div>
+</div>
+
+<!-- ── 04 ── -->
+<div class="section" id="s4">
+  <div class="sec-head">
+    <div class="sec-num" style="background:var(--nl)">04</div>
+    <div class="sec-title">Spazio e movimento</div>
+  </div>
+  <div class="prose">
+    <p>Il modello usa uno <strong>spazio continuo</strong> con coordinate float, mondo &minus;16&rarr;+16 su entrambi gli assi, con bordi connessi (toroidale). Gli agenti che escono da un lato rientrano dal lato opposto.</p>
+    <p>Il movimento in NetLogo &egrave; basato su <strong>heading</strong> (direzione in gradi) e <strong>forward</strong> (avanzamento nella direzione corrente). Python non ha questi concetti built-in: si costruiscono con la trigonometria.</p>
+  </div>
+
+  <table class="cmp-table">
+    <tr><th>NetLogo</th><th>Python</th><th>Significato</th></tr>
+    <tr><td>xcor, ycor</td><td>agente.x, agente.y</td><td>Coordinate continue dell&rsquo;agente</td></tr>
+    <tr><td>random-xcor</td><td>rng.uniform(-16, 16)</td><td>Posizione casuale sull&rsquo;asse x</td></tr>
+    <tr><td>setxy x y</td><td>a.x = x; a.y = y</td><td>Imposta la posizione</td></tr>
+    <tr><td>max-pxcor = 16</td><td>L = 16.0</td><td>Bordo del mondo</td></tr>
+    <tr><td>wrapping automatico</td><td>x = ((x + L) % (2*L)) - L</td><td>Bordi connessi (toroidale)</td></tr>
+  </table>
+
+  <div class="note">
+    <strong>Come funziona la formula di wrapping</strong>
+    <code>((x + L) % (2*L)) - L</code> riporta qualsiasi valore nell&rsquo;intervallo [&minus;L, L]. Prima sposta l&rsquo;origine a 0 (+L), poi applica il modulo sull&rsquo;intervallo pieno (2*L), poi riporta all&rsquo;origine (&minus;L). Con L=16: se x=17 &rarr; (33 % 32) &minus; 16 = 1 &minus; 16 = &minus;15.
+  </div>
+
+  <div class="compare" style="margin-top:20px;">
+    <div class="compare-head">
+      <div class="ch-nl">NetLogo &mdash; to move</div>
+      <div class="ch-py">Python &mdash; def muovi()</div>
+    </div>
+    <div class="compare-body">
+    <div class="col-nl"><pre>to move
+  rt random 360  <span class="cm">; nuovo angolo casuale</span>
+  fd 1           <span class="cm">; avanza di 1 unità</span>
+end              <span class="cm">; wrapping automatico</span></pre></div>
+    <div class="col-py"><pre>def muovi(a, cfg, rng):
+    <span class="cm"># rt random 360: nuovo angolo casuale</span>
+    a.angolo = rng.uniform(0, 2 * math.pi)
+
+    <span class="cm"># fd 1: scomponi in componenti x e y</span>
+    a.x += cfg.velocita * math.cos(a.angolo)
+    a.y += cfg.velocita * math.sin(a.angolo)
+
+    <span class="cm"># wrapping toroidale (manuale)</span>
+    L = cfg.L
+    a.x = ((a.x + L) % (2*L)) - L
+    a.y = ((a.y + L) % (2*L)) - L</pre></div>
+    </div>
+  </div>
+
+  <!-- spiegazione a parole muovi -->
+  <div style="border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin:14px 0;">
+    <div style="background:var(--bg3);padding:8px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text3);border-bottom:1.5px solid var(--border);">
+      Come si legge a parole
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);">
+      <div style="padding:12px 14px;border-right:1px solid var(--border);font-size:13px;line-height:1.8;color:var(--text2);">
+        <strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--nl-b);margin-bottom:6px;">Riga per riga</strong>
+        <ol style="margin:0;padding-left:1.3em;">
+          <li>Scegli un <strong>angolo casuale</strong> tra 0 e 2&pi; (equivale a <code>rt random 360</code>).</li>
+          <li>Sposta l&rsquo;agente in avanti: aggiungi alla sua <strong>x attuale</strong> la componente orizzontale del passo, e alla <strong>y attuale</strong> quella verticale (<code>+=</code> significa &ldquo;aggiungi al valore già esistente&rdquo;).</li>
+          <li>Se l&rsquo;agente è uscito dal bordo del mondo, <strong>fallo rientrare dal lato opposto</strong> (wrapping toroidale).</li>
+        </ol>
+      </div>
+      <div style="padding:12px 14px;font-size:13px;line-height:1.8;color:var(--text2);">
+        <strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--py-b);margin-bottom:6px;">Chi sono i parametri?</strong>
+        <p style="margin:0 0 6px;"><strong><code>a</code></strong> &mdash; l&rsquo;agente che si sta muovendo. La funzione viene chiamata una volta per ogni agente: prima muove il primo, poi il secondo, ecc.</p>
+        <p style="margin:0 0 6px;"><strong><code>cfg</code></strong> &mdash; la configurazione: contiene la velocità (<code>cfg.velocita</code>) e il bordo del mondo (<code>cfg.L</code>).</p>
+        <p style="margin:0;"><strong><code>rng</code></strong> &mdash; il generatore di numeri casuali, serve per scegliere il nuovo angolo.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="math-box">
+    <h4>La matematica dietro forward</h4>
+    <div class="math-row">
+      <span class="math-label">NetLogo: fd 1</span>
+      <span class="math-desc">Avanza di 1 unit&agrave; nella direzione <code>heading</code>. NetLogo calcola internamente la scomposizione.</span>
+    </div>
+    <div class="math-row">
+      <span class="math-label">Python: cos/sin</span>
+      <span class="math-desc">In Python lo fai tu: <code>dx = v &times; cos(&alpha;)</code>, <code>dy = v &times; sin(&alpha;)</code>. Il coseno d&agrave; la componente orizzontale (x), il seno quella verticale (y).</span>
+    </div>
+    <div class="math-row">
+      <span class="math-label">Gradi vs radianti</span>
+      <span class="math-desc">NetLogo usa <strong>gradi</strong> (0&ndash;360). Python usa <strong>radianti</strong> (0&ndash;2&pi;). Nel SIR ad ogni tick si sceglie un angolo completamente casuale, quindi la distribuzione &egrave; uniforme in entrambi i casi.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── 05 ── -->
+<div class="section" id="s5">
+  <div class="sec-head">
+    <div class="sec-num" style="background:var(--nl)">05</div>
+    <div class="sec-title">Il contagio &mdash; da <code>in-radius</code> + <code>random-float</code> a Python</div>
+  </div>
+  <div class="prose">
+    <p>Questa &egrave; la regola di interazione del SIR. Solo gli agenti <strong>infetti</strong> agiscono: cercano suscettibili entro raggio 1 e li contagiano con probabilit&agrave; <code>&beta;</code>. Solo i portatori dello stato <code>"I"</code> iniziano l&rsquo;interazione, e il contagio &egrave; <strong>probabilistico</strong>, non deterministico.</p>
+  </div>
+
+  <div class="compare">
+    <div class="compare-head">
+      <div class="ch-nl">NetLogo &mdash; controlla-contagio</div>
+      <div class="ch-py">Python &mdash; controlla_contagio()</div>
+    </div>
+    <div class="compare-body">
+    <div class="col-nl"><pre>to controlla-contagio
+  <span class="cm">; solo gli infetti agiscono</span>
+  if stato = "I" [
+    ask turtles in-radius 1
+        with [stato = "S"] [
+
+      <span class="cm">; probabilistico: random-float 1</span>
+      if random-float 1 < prob-infezione [
+        set stato "I"
+        set timer-infezione 0
+        set color red
+      ]
+    ]
+  ]
+end</pre></div>
+    <div class="col-py"><pre>def controlla_contagio(a, tutti, cfg, rng):
+    <span class="cm"># solo gli infetti agiscono</span>
+    if a.stato != "I":
+        return
+
+    for b in tutti:
+        if b is a or b.stato != "S":
+            continue
+
+        <span class="cm"># in-radius 1 → distanza euclidea</span>
+        dist = math.hypot(a.x - b.x, a.y - b.y)
+
+        if dist <= cfg.raggio:
+            <span class="cm"># random-float 1 < prob-infezione</span>
+            if rng.random() < cfg.prob_infezione:
+                b.stato = "I"
+                b.timer = 0</pre></div>
+    </div>
+  </div>
+
+  <!-- spiegazione a parole controlla_contagio -->
+  <div style="border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin:14px 0;">
+    <div style="background:var(--bg3);padding:8px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text3);border-bottom:1.5px solid var(--border);">
+      Come si legge a parole
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;">
+      <div style="padding:12px 14px;border-right:1px solid var(--border);font-size:13px;line-height:1.8;color:var(--text2);">
+        <strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--nl-b);margin-bottom:6px;">Riga per riga</strong>
+        <ol style="margin:0;padding-left:1.3em;">
+          <li>Se l&rsquo;agente corrente <strong>non è infetto</strong>, non fare nulla e esci subito (<code>return</code>).</li>
+          <li>Altrimenti, <strong>scorri tutti gli altri agenti</strong> uno per uno.</li>
+          <li>Salta chi è lo stesso agente (<code>b is a</code>) o chi non è suscettibile: ci interessa solo un potenziale contagiato.</li>
+          <li>Calcola la <strong>distanza</strong> tra i due agenti. Se è dentro il raggio di contagio&hellip;</li>
+          <li>&hellip;estrai un numero casuale: se è sotto la soglia <code>prob_infezione</code>, il contatto diventa <strong>contagio</strong> — cambia lo stato di <code>b</code> a "I".</li>
+        </ol>
+      </div>
+      <div style="padding:12px 14px;font-size:13px;line-height:1.8;color:var(--text2);">
+        <strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--py-b);margin-bottom:6px;">Chi sono i parametri?</strong>
+        <p style="margin:0 0 6px;"><strong><code>a</code></strong> &mdash; l&rsquo;agente attivo in questo momento, quello che &ldquo;guarda intorno&rdquo;. Può essere S, I o R &mdash; ma se non è I la funzione esce subito.</p>
+        <p style="margin:0 0 6px;"><strong><code>tutti</code></strong> &mdash; la lista <em>completa</em> di tutti gli agenti della simulazione. È l&rsquo;equivalente di <code>turtles</code> in NetLogo: tutti i presenti nel mondo.</p>
+        <p style="margin:0 0 6px;"><strong><code>b</code></strong> &mdash; ogni altro agente che <code>a</code> incontra nel ciclo. È il <em>potenziale bersaglio</em>: se è suscettibile e vicino, rischia il contagio. Il nome <code>b</code> è convenzionale &mdash; significa semplicemente &ldquo;il secondo agente&rdquo;.</p>
+        <p style="margin:0;"><strong><code>b is a</code></strong> &mdash; controlla che <code>b</code> non sia lo stesso agente di <code>a</code>. Senza questo controllo un agente si confronterebbe con se stesso e potrebbe &ldquo;autocontagiarsi&rdquo;.</p>
+      </div>
+    </div>
+  </div>
+
+  <table class="cmp-table" style="margin-top:14px;">
+    <tr><th>NetLogo</th><th>Python</th><th>Nota</th></tr>
+    <tr><td>if stato = "I" [...]</td><td>if a.stato != "I": return</td><td>Solo gli infetti cercano vittime</td></tr>
+    <tr><td>turtles in-radius 1 with [stato = "S"]</td><td>loop + math.hypot + controllo stato</td><td>Filtra per distanza e stato</td></tr>
+    <tr><td>random-float 1 &lt; prob-infezione</td><td>rng.random() &lt; cfg.prob_infezione</td><td>Evento probabilistico uniforme in [0,1)</td></tr>
+    <tr><td>set timer-infezione 0</td><td>b.timer = 0</td><td>Azzera il contatore al momento del contagio</td></tr>
+  </table>
+
+  <div class="math-box">
+    <h4>math.hypot() — la distanza euclidea</h4>
+    <div class="math-row">
+      <span class="math-label">NetLogo</span>
+      <span class="math-desc"><code>in-radius r</code> &mdash; primitiva built-in, calcola internamente &radic;(dx&sup2; + dy&sup2;).</span>
+    </div>
+    <div class="math-row">
+      <span class="math-label">Python</span>
+      <span class="math-desc"><code>math.hypot(dx, dy)</code> &mdash; calcola &radic;(dx&sup2; + dy&sup2;). &Egrave; il teorema di Pitagora: la distanza tra due punti &egrave; l&rsquo;ipotenusa del triangolo rettangolo formato dalle differenze di x e y.</span>
+    </div>
+    <div class="math-row">
+      <span class="math-label">rng.random()</span>
+      <span class="math-desc">Genera un numero casuale in [0, 1). Il confronto <code>&lt; prob_infezione</code> d&agrave; True con probabilit&agrave; esattamente <code>prob_infezione</code>. Se <code>prob_infezione = 0.3</code>, il 30% degli incontri entro raggio porta a contagio.</span>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Attenzione alla complessit&agrave; O(N&sup2;)</strong>
+    La funzione controlla ogni agente infetto contro ogni altro agente &mdash; questo &egrave; O(N&sup2;). Per modelli con poche centinaia di agenti va benissimo. Per modelli pi&ugrave; grandi esistono strutture dati spaziali (k-d tree, griglia di celle) che accelerano la ricerca dei vicini a O(N log N) o O(N).
+  </div>
+</div>
+
+<!-- ── 06 ── -->
+<div class="section" id="s6">
+  <div class="sec-head">
+    <div class="sec-num" style="background:#555">06</div>
+    <div class="sec-title">La guarigione &mdash; <code>aggiorna-stato</code></div>
+  </div>
+  <div class="prose">
+    <p>Questa procedura gestisce il cambiamento di stato basato sul <strong>tempo</strong>, non su un incontro. Ogni tick, ogni agente infetto incrementa il suo <code>timer</code>. Quando il timer raggiunge la soglia <code>durata-infezione</code>, l&rsquo;agente guarisce e diventa <strong>R</strong> (rimosso/immune).</p>
+    <p>Il punto cruciale &egrave; l&rsquo;<strong>ordine delle procedure nel ciclo</strong>: prima si esegue il contagio, poi si aggiorna lo stato. Cos&igrave; un agente che viene contagiato questo tick non guarisce nello stesso tick.</p>
+  </div>
+
+  <div class="compare">
+    <div class="compare-head">
+      <div class="ch-nl">NetLogo &mdash; aggiorna-stato</div>
+      <div class="ch-py">Python &mdash; aggiorna_stato()</div>
+    </div>
+    <div class="compare-body">
+    <div class="col-nl"><pre>to aggiorna-stato
+  <span class="cm">; solo gli infetti invecchiano</span>
+  if stato = "I" [
+    set timer-infezione
+        timer-infezione + 1
+
+    if timer-infezione >= durata-infezione [
+      set stato "R"
+      set color gray
+    ]
+  ]
+end</pre></div>
+    <div class="col-py"><pre>def aggiorna_stato(a, cfg):
+    <span class="cm"># solo gli infetti invecchiano</span>
+    if a.stato != "I":
+        return
+
+    a.timer += 1  <span class="cm"># timer-infezione + 1</span>
+
+    if a.timer >= cfg.durata_infezione:
+        a.stato = "R"  <span class="cm"># set stato "R"</span>
+        a.timer = 0    <span class="cm"># reset (facoltativo)</span></pre></div>
+    </div>
+  </div>
+
+  <div class="tip">
+    <strong>Perch&eacute; separare contagio e guarigione in due procedure distinte</strong>
+    Si potrebbe scrivere tutto in una funzione sola. Ma separare le due cose rende il codice pi&ugrave; leggibile e pi&ugrave; fedele alla struttura NetLogo (che usa <code>to controlla-contagio</code> e <code>to aggiorna-stato</code> separati). Soprattutto, rende esplicita la <em>semantica</em>: il contagio &egrave; un&rsquo;interazione tra due agenti, la guarigione &egrave; un aggiornamento interno del singolo agente.
+  </div>
+</div>
+
+<!-- ── 07 ── -->
+<div class="section" id="s7">
+  <div class="sec-head">
+    <div class="sec-num" style="background:var(--nl)">07</div>
+    <div class="sec-title">Il ciclo principale &mdash; da <code>to go</code> al loop Python</div>
+  </div>
+  <div class="prose">
+    <p>In NetLogo <code>to go</code> &egrave; la procedura chiamata ad ogni tick. In Python &egrave; un <code>for</code> loop che chiama le tre procedure nell&rsquo;ordine corretto. La simulazione si ferma quando non ci sono pi&ugrave; agenti infetti.</p>
+  </div>
+
+  <div class="compare">
+    <div class="compare-head">
+      <div class="ch-nl">NetLogo &mdash; to go</div>
+      <div class="ch-py">Python &mdash; ciclo principale</div>
+    </div>
+    <div class="compare-body">
+    <div class="col-nl"><pre>to go
+  ask turtles [ move ]
+  ask turtles [ controlla-contagio ]
+  ask turtles [ aggiorna-stato ]
+
+  if nessun-infetto? [ stop ]
+  tick
+end
+
+to-report nessun-infetto?
+  report count turtles
+      with [stato = "I"] = 0
+end</pre></div>
+    <div class="col-py"><pre>def run(cfg, max_tick=2000):
+    rng    = np.random.default_rng(cfg.seed)
+    agenti = crea_agenti(cfg, rng)
+    storia = {"S": [], "I": [], "R": []}
+
+    for tick in range(max_tick):
+        <span class="cm"># ask turtles [move]</span>
+        for a in agenti:
+            muovi(a, cfg, rng)
+
+        <span class="cm"># ask turtles [controlla-contagio]</span>
+        rng.shuffle(agenti)
+        for a in agenti:
+            controlla_contagio(a, agenti, cfg, rng)
+
+        <span class="cm"># ask turtles [aggiorna-stato]</span>
+        for a in agenti:
+            aggiorna_stato(a, cfg)
+
+        for stato in storia:
+            storia[stato].append(
+                sum(1 for a in agenti
+                    if a.stato == stato)
+            )
+
+        <span class="cm"># if nessun-infetto? [stop]</span>
+        if storia["I"][-1] == 0:
+            print(f"Epidemia terminata al tick {tick}")
+            break
+
+    return storia</pre></div>
+    </div>
+  </div>
+
+  <table class="cmp-table" style="margin-top:14px;">
+    <tr><th>NetLogo</th><th>Python</th><th>Nota</th></tr>
+    <tr><td>ask turtles [move]</td><td>for a in agenti: muovi(a, ...)</td><td>Itera su tutti gli agenti</td></tr>
+    <tr><td>ask turtles [controlla-contagio]</td><td>rng.shuffle + for loop</td><td>Ordine casuale come NetLogo</td></tr>
+    <tr><td>ask turtles [aggiorna-stato]</td><td>for a in agenti: aggiorna_stato(...)</td><td>Terza procedura del ciclo</td></tr>
+    <tr><td>tick</td><td>indice del for loop</td><td>Contatore automatico</td></tr>
+    <tr><td>stop</td><td>break</td><td>Esce dal ciclo</td></tr>
+    <tr><td>count turtles with [stato="I"] = 0</td><td>storia["I"][-1] == 0</td><td>L&rsquo;ultimo valore registrato &egrave; 0</td></tr>
+  </table>
+
+  <div class="tip">
+    <strong>Perch&eacute; rng.shuffle prima del contagio?</strong>
+    In NetLogo, <code>ask turtles</code> itera sugli agenti in ordine casuale ad ogni tick. In Python il loop <code>for a in agenti</code> itera sempre nello stesso ordine. Mescolare la lista prima del contagio replica il comportamento NetLogo ed evita che gli agenti all&rsquo;inizio della lista abbiano sempre pi&ugrave; opportunit&agrave; di contagiare.
+  </div>
+</div>
+
+<!-- ── 08 ── -->
+<div class="section" id="s8">
+  <div class="sec-head">
+    <div class="sec-num" style="background:#555">08</div>
+    <div class="sec-title">Dati e visualizzazione</div>
+  </div>
+  <div class="prose">
+    <p>In NetLogo il plot delle popolazioni S/I/R si configura nell&rsquo;interfaccia grafica e si aggiorna automaticamente. In Python raccogliamo i dati nel dizionario <code>storia</code> durante la simulazione e poi li plottiamo con Matplotlib. Il risultato atteso &egrave; la classica <strong>curva epidemica</strong>: S decresce monotonicamente, I sale poi scende a campana, R cresce monotonicamente.</p>
+  </div>
+
+  <div class="compare">
+    <div class="compare-head">
+      <div class="ch-nl">NetLogo &mdash; plot automatico</div>
+      <div class="ch-py">Python &mdash; Matplotlib</div>
+    </div>
+    <div class="compare-body">
+    <div class="col-nl"><pre><span class="cm">; configurato nell'interfaccia:</span>
+<span class="cm">; plot count turtles with [stato="S"]</span>
+<span class="cm">; plot count turtles with [stato="I"]</span>
+<span class="cm">; plot count turtles with [stato="R"]</span>
+<span class="cm">; → si aggiorna ad ogni tick</span></pre></div>
+    <div class="col-py"><pre>import matplotlib.pyplot as plt
+
+def visualizza(storia):
+    plt.figure(figsize=(10, 4))
+    plt.plot(storia["S"], color="steelblue",
+             label="Suscettibili (S)", linewidth=1.8)
+    plt.plot(storia["I"], color="crimson",
+             label="Infetti (I)",      linewidth=1.8)
+    plt.plot(storia["R"], color="gray",
+             label="Rimossi (R)",      linewidth=1.8)
+    plt.xlabel("Tick")
+    plt.ylabel("Numero agenti")
+    plt.title("Modello SIR — curva epidemica")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()</pre></div>
+    </div>
+  </div>
+
+  <div class="tip">
+    <strong>Cosa cambia al variare dei parametri</strong>
+    Aumentare <code>prob_infezione</code> allarga e anticipa il picco della curva I. Aumentare <code>durata_infezione</code> allunga il periodo in cui ogni agente &egrave; contagioso, amplificando l&rsquo;epidemia. Diminuire <code>raggio</code> rallenta il contagio perch&eacute; gli agenti devono avvicinarsi di pi&ugrave;. Questi sono esattamente i parametri che epidemiologici variano negli studi di intervento (es. distanziamento sociale = raggio ridotto).
+  </div>
+</div>
+
+<!-- ── 09 ── -->
+<div class="section" id="s9">
+  <div class="sec-head">
+    <div class="sec-num" style="background:var(--py)">09</div>
+    <div class="sec-title">Codice Python completo</div>
+  </div>
+  <div class="prose">
+    <p>Tutto insieme in un unico file <code>sir.py</code>. Copia, esegui con <code>python sir.py</code> e ottieni la curva epidemica del tuo modello NetLogo.</p>
+  </div>
+  <div class="code-py">import math
+import numpy as np
+import matplotlib.pyplot as plt
+from dataclasses import dataclass
+
+<span class="cm"># ── Configurazione (equivale agli slider di NetLogo) ────────────────</span>
+@dataclass
+class Config:
+    num_S:            int   = 490   <span class="cm"># agenti suscettibili iniziali</span>
+    num_I:            int   = 10    <span class="cm"># agenti infetti iniziali</span>
+    prob_infezione:   float = 0.3   <span class="cm"># probabilità di contagio per contatto</span>
+    durata_infezione: int   = 50    <span class="cm"># tick prima della guarigione</span>
+    velocita:         float = 1.0   <span class="cm"># equivale a fd 1</span>
+    raggio:           float = 1.0   <span class="cm"># equivale a in-radius 1</span>
+    L:                float = 16.0  <span class="cm"># bordo del mondo (-L a +L)</span>
+    seed:             int   = 42
+
+<span class="cm"># ── Agente (equivale a turtles-own in NetLogo) ──────────────────────</span>
+@dataclass
+class Agente:
+    stato:  str    <span class="cm"># "S", "I" o "R"</span>
+    x:      float  <span class="cm"># ← xcor</span>
+    y:      float  <span class="cm"># ← ycor</span>
+    angolo: float  <span class="cm"># ← heading (in radianti)</span>
+    timer:  int = 0  <span class="cm"># ← timer-infezione</span>
+
+<span class="cm"># ── Setup (equivale a crea-agenti) ──────────────────────────────────</span>
+def crea_agenti(cfg, rng):
+    agenti = []
+    for stato, n in [("S", cfg.num_S), ("I", cfg.num_I)]:
+        for _ in range(n):
+            agenti.append(Agente(
+                stato  = stato,
+                x      = rng.uniform(-cfg.L, cfg.L),
+                y      = rng.uniform(-cfg.L, cfg.L),
+                angolo = rng.uniform(0, 2 * math.pi),
+                timer  = 0
+            ))
+    return agenti
+
+<span class="cm"># ── Movimento (equivale a to move) ──────────────────────────────────</span>
+def muovi(a, cfg, rng):
+    a.angolo = rng.uniform(0, 2 * math.pi)       <span class="cm"># rt random 360</span>
+    a.x += cfg.velocita * math.cos(a.angolo)     <span class="cm"># fd 1 → componente x</span>
+    a.y += cfg.velocita * math.sin(a.angolo)     <span class="cm"># fd 1 → componente y</span>
+    L = cfg.L
+    a.x = ((a.x + L) % (2 * L)) - L             <span class="cm"># wrapping toroidale</span>
+    a.y = ((a.y + L) % (2 * L)) - L
+
+<span class="cm"># ── Contagio (equivale a controlla-contagio) ────────────────────────</span>
+def controlla_contagio(a, tutti, cfg, rng):
+    if a.stato != "I":
+        return
+    for b in tutti:
+        if b is a or b.stato != "S":
+            continue
+        if math.hypot(a.x - b.x, a.y - b.y) <= cfg.raggio:
+            if rng.random() < cfg.prob_infezione:  <span class="cm"># random-float 1 < prob</span>
+                b.stato = "I"
+                b.timer = 0
+
+<span class="cm"># ── Guarigione (equivale a aggiorna-stato) ──────────────────────────</span>
+def aggiorna_stato(a, cfg):
+    if a.stato != "I":
+        return
+    a.timer += 1
+    if a.timer >= cfg.durata_infezione:
+        a.stato = "R"
+        a.timer = 0
+
+<span class="cm"># ── Ciclo principale (equivale a to go) ─────────────────────────────</span>
+def run(cfg, max_tick=2000):
+    rng    = np.random.default_rng(cfg.seed)
+    agenti = crea_agenti(cfg, rng)
+    storia = {"S": [], "I": [], "R": []}
+
+    for tick in range(max_tick):
+        for a in agenti:
+            muovi(a, cfg, rng)
+
+        rng.shuffle(agenti)                      <span class="cm"># ordine casuale come NetLogo</span>
+        for a in agenti:
+            controlla_contagio(a, agenti, cfg, rng)
+
+        for a in agenti:
+            aggiorna_stato(a, cfg)
+
+        for stato in storia:
+            storia[stato].append(
+                sum(1 for a in agenti if a.stato == stato)
+            )
+
+        if storia["I"][-1] == 0:
+            print(f"Epidemia terminata al tick {tick}")
+            break
+
+    return storia
+
+<span class="cm"># ── Visualizzazione ─────────────────────────────────────────────────</span>
+def visualizza(storia):
+    plt.figure(figsize=(10, 4))
+    plt.plot(storia["S"], color="steelblue", label="Suscettibili (S)", linewidth=1.8)
+    plt.plot(storia["I"], color="crimson",   label="Infetti (I)",      linewidth=1.8)
+    plt.plot(storia["R"], color="gray",      label="Rimossi (R)",      linewidth=1.8)
+    plt.xlabel("Tick")
+    plt.ylabel("Numero agenti")
+    plt.title("Modello SIR — curva epidemica")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+<span class="cm"># ── Punto di ingresso ───────────────────────────────────────────────</span>
+if __name__ == "__main__":
+    cfg    = Config()
+    storia = run(cfg)
+    visualizza(storia)</div>
+
+  <div class="tip" style="margin-top:14px;">
+    <strong>Come eseguire</strong>
+    Installa le dipendenze con <code>pip install numpy matplotlib</code>, poi esegui con <code>python sir.py</code>. Non servono altre librerie &mdash; niente Mesa, niente framework ABM.
+  </div>
+</div>
+
+<!-- ── 10 ── -->
+<div class="section" id="s10">
+  <div class="sec-head">
+    <div class="sec-num" style="background:#9333ea">10</div>
+    <div class="sec-title">Cosa fare dopo</div>
+  </div>
+  <div class="prose">
+    <p>Hai visto come tradurre un modello NetLogo in Python pezzo per pezzo. Il passo successivo &egrave; <strong>sperimentare</strong>: cambia i parametri, aggiungi regole, osserva cosa cambia nella curva epidemica.</p>
+  </div>
+
+  <div class="concept-grid">
+    <div class="concept-card" style="border-top:3px solid #dc2626;">
+      <h4 style="color:#dc2626;">Esperimenti suggeriti</h4>
+      <p>Varia <code>prob_infezione</code> (0.1 &rarr; 0.9) e osserva come cambia il picco. Riduci <code>raggio</code> a 0.5: &egrave; l&rsquo;equivalente del distanziamento sociale. Aumenta <code>durata_infezione</code> e nota l&rsquo;effetto sulla curva R.</p>
+    </div>
+    <div class="concept-card" style="border-top:3px solid #d97706;">
+      <h4 style="color:#d97706;">Estensioni possibili</h4>
+      <p>Aggiungi uno stato <strong>E</strong> (esposto, SEIR). Introduci la <strong>vaccinazione</strong>: una frazione di S inizia come R. Aggiungi <strong>mortalit&agrave;</strong>: alcuni I non guariscono ma escono dalla simulazione.</p>
+    </div>
+    <div class="concept-card" style="border-top:3px solid #16a34a;">
+      <h4 style="color:#16a34a;">Passo successivo: Mesa</h4>
+      <p>Mesa &egrave; il framework Python standard per ABM. Ora che conosci la struttura sottostante (agenti, ciclo, procedure), passare a Mesa significa guadagnare visualizzazione integrata e strumenti di batch-run, senza cambiare il modo di pensare.</p>
+    </div>
+    <div class="concept-card" style="border-top:3px solid #2563eb;">
+      <h4 style="color:#2563eb;">Performance</h4>
+      <p>Con 500 agenti il modello &egrave; veloce. Con 5000 il ciclo O(N&sup2;) rallenta. Il prossimo step &egrave; una <strong>griglia di celle</strong> (spatial hashing) per ridurre la ricerca dei vicini da O(N&sup2;) a O(N).</p>
+    </div>
+  </div>
+
+  <div class="tip" style="margin-top:16px;">
+    <strong>Riepilogo di ci&ograve; che hai imparato</strong>
+    Struttura del codice (setup / go / procedure) &rarr; Agente come dataclass &rarr; Spazio continuo toroidale &rarr; Movimento trigonometrico &rarr; Contagio probabilistico con <code>in-radius</code> &rarr; Guarigione basata sul tempo &rarr; Ciclo principale con shuffle &rarr; Raccolta dati e curva epidemica. Ogni pezzo corrisponde a un costrutto NetLogo preciso.
+  </div>
+</div>
+
+<!-- ── 11 ── -->
+<div class="section" id="s11">
+  <div class="sec-head">
+    <div class="sec-num" style="background:#7c3d0a">11</div>
+    <div class="sec-title">Costruire un ABM da zero &mdash; la ricetta generale</div>
+  </div>
+  <div class="prose">
+    <p>Ora che hai visto il SIR pezzo per pezzo, hai tutti gli strumenti per costruire <strong>qualsiasi modello ad agenti</strong> in Python. Questa sezione distilla il processo in una ricetta riutilizzabile: come si decide cosa va in ogni blocco del codice, in che ordine scrivere le cose, e come capire quali librerie e parametri servono.</p>
+  </div>
+
+  <!-- ── TEMPLATE FISSO ── -->
+  <div class="prose" style="margin-top:22px;">
+    <p><strong>Il template che si ripete sempre</strong></p>
+    <p>Ogni ABM in Python ha la stessa struttura di file, indipendentemente dal fenomeno che si modella. Impararla una volta significa non doverla reinventare:</p>
+  </div>
+
+  <div class="flow" style="flex-wrap:wrap;gap:4px;">
+    <div class="flow-step" style="border-top:3px solid #7c3d0a;"><code>import</code><br><span style="font-size:11px;font-weight:400;color:var(--text3);">librerie</span></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step" style="border-top:3px solid #2563eb;"><code>Config</code><br><span style="font-size:11px;font-weight:400;color:var(--text3);">parametri</span></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step" style="border-top:3px solid #16a34a;"><code>Agente</code><br><span style="font-size:11px;font-weight:400;color:var(--text3);">dataclass</span></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step" style="border-top:3px solid #d97706;">funzioni<br><span style="font-size:11px;font-weight:400;color:var(--text3);">regole</span></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step" style="border-top:3px solid #9333ea;"><code>run()</code><br><span style="font-size:11px;font-weight:400;color:var(--text3);">ciclo</span></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step" style="border-top:3px solid #dc2626;"><code>visualizza()</code><br><span style="font-size:11px;font-weight:400;color:var(--text3);">grafici</span></div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step" style="border-top:3px solid #555;"><code>__main__</code><br><span style="font-size:11px;font-weight:400;color:var(--text3);">punto di ingresso</span></div>
+  </div>
+
+  <div class="tip" style="margin-top:8px;">
+    <strong>Regola d&rsquo;oro</strong>
+    Non saltare l&rsquo;ordine. Ogni blocco <em>usa</em> quelli che lo precedono: le funzioni usano <code>Agente</code> e <code>Config</code>, <code>run()</code> usa le funzioni, <code>__main__</code> usa tutto. Scrivere in ordine significa che il codice &egrave; sempre eseguibile fino al punto in cui sei arrivato.
+  </div>
+
+  <!-- ── DOVE METTERE COSA ── -->
+  <div class="prose" style="margin-top:28px;">
+    <p><strong>Dove mettere cosa &mdash; blocco per blocco</strong></p>
+  </div>
+
+  <div style="border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin:12px 0;">
+    <div style="background:var(--bg3);padding:8px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text3);border-bottom:1.5px solid var(--border);">Ordine consigliato nel file .py</div>
+
+    <div style="display:grid;grid-template-columns:140px 1fr;border-bottom:1px solid var(--border);">
+      <div style="padding:12px 14px;background:var(--am-l);border-right:1px solid var(--border);font-family:var(--fm);font-size:12px;color:var(--am);display:flex;align-items:flex-start;">1. import</div>
+      <div style="padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.7;">Le librerie che il codice usa. Vanno <em>sempre</em> in cima, prima di qualsiasi altro codice. Importa solo quello che serve (vedi sezione librerie qui sotto).</div>
+    </div>
+    <div style="display:grid;grid-template-columns:140px 1fr;border-bottom:1px solid var(--border);">
+      <div style="padding:12px 14px;background:var(--nl-l);border-right:1px solid var(--border);font-family:var(--fm);font-size:12px;color:var(--nl);">2. Config</div>
+      <div style="padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.7;">La <code>@dataclass</code> con tutti i <strong>parametri configurabili</strong> del modello (numeri di agenti, probabilit&agrave;, raggi, velocit&agrave;, seed). Mettila subito dopo gli import &mdash; &egrave; il &ldquo;pannello di controllo&rdquo; del modello. Usare valori di default significa poterla istanziare con <code>Config()</code> senza argomenti.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:140px 1fr;border-bottom:1px solid var(--border);">
+      <div style="padding:12px 14px;background:var(--py-l);border-right:1px solid var(--border);font-family:var(--fm);font-size:12px;color:var(--py);">3. Agente</div>
+      <div style="padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.7;">La <code>@dataclass</code> che rappresenta un singolo agente. Va subito dopo <code>Config</code>. Deve venire <em>prima</em> delle funzioni perch&eacute; le funzioni lavorano su oggetti <code>Agente</code> &mdash; Python deve sapere cos&rsquo;&egrave; <code>Agente</code> prima di usarlo.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:140px 1fr;border-bottom:1px solid var(--border);">
+      <div style="padding:12px 14px;background:#fef3c7;border-right:1px solid var(--border);font-family:var(--fm);font-size:12px;color:#92400e;">4. crea_agenti()</div>
+      <div style="padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.7;">La funzione che costruisce la lista di agenti iniziali. Va prima delle funzioni di comportamento perch&eacute; <code>run()</code> la chiama per prima. &Egrave; l&rsquo;equivalente del <code>setup</code> di NetLogo.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:140px 1fr;border-bottom:1px solid var(--border);">
+      <div style="padding:12px 14px;background:#fef3c7;border-right:1px solid var(--border);font-family:var(--fm);font-size:12px;color:#92400e;">5. funzioni<br>comportamento</div>
+      <div style="padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.7;">Ogni regola del modello &egrave; una funzione separata: <code>muovi()</code>, <code>interagisce()</code>, <code>aggiorna_stato()</code>, ecc. L&rsquo;ordine tra di loro non &egrave; critico (Python le risolve quando vengono <em>chiamate</em>, non quando vengono <em>definite</em>), ma mettile nell&rsquo;ordine in cui vengono usate nel ciclo.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:140px 1fr;border-bottom:1px solid var(--border);">
+      <div style="padding:12px 14px;background:#fef3c7;border-right:1px solid var(--border);font-family:var(--fm);font-size:12px;color:#92400e;">6. run()</div>
+      <div style="padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.7;">Il ciclo principale che esegue il modello. Chiama tutte le funzioni di comportamento ad ogni tick. Va dopo le funzioni che chiama.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:140px 1fr;border-bottom:1px solid var(--border);">
+      <div style="padding:12px 14px;background:#fef3c7;border-right:1px solid var(--border);font-family:var(--fm);font-size:12px;color:#92400e;">7. visualizza()</div>
+      <div style="padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.7;">La funzione che riceve i dati raccolti da <code>run()</code> e produce i grafici. Va dopo <code>run()</code> perch&eacute; dipende dall&rsquo;output di <code>run()</code>.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:140px 1fr;">
+      <div style="padding:12px 14px;background:var(--bg3);border-right:1px solid var(--border);font-family:var(--fm);font-size:12px;color:var(--text2);">8. __main__</div>
+      <div style="padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.7;"><code>if __name__ == &quot;__main__&quot;:</code> &egrave; sempre l&rsquo;ultimissima cosa nel file. Istanzia <code>Config()</code>, chiama <code>run()</code>, chiama <code>visualizza()</code>. &Egrave; il punto di ingresso quando esegui il file con <code>python modello.py</code>.</div>
+    </div>
+  </div>
+
+  <!-- ── AGENTE COME DATACLASS ── -->
+  <div class="prose" style="margin-top:28px;">
+    <p><strong>Come decidere gli attributi dell&rsquo;agente</strong></p>
+    <p>La <code>@dataclass Agente</code> contiene tutto ci&ograve; che l&rsquo;agente deve <em>ricordare</em> tra un tick e l&rsquo;altro. Per decidere quali campi mettere, fai queste tre domande:</p>
+  </div>
+
+  <table class="cmp-table">
+    <tr><th>Domanda</th><th>Se s&igrave; &rarr; aggiungi</th><th>Esempio SIR</th></tr>
+    <tr>
+      <td style="font-family:var(--fn);color:var(--text);">L&rsquo;agente ha uno <strong>stato discreto</strong> che cambia nel tempo?</td>
+      <td style="background:transparent;font-family:var(--fn);color:var(--py);">un campo <code>stato: str</code> (o <code>int</code> con costanti)</td>
+      <td style="font-size:12.5px;color:var(--text2);"><code>stato = &quot;S&quot; / &quot;I&quot; / &quot;R&quot;</code></td>
+    </tr>
+    <tr>
+      <td style="font-family:var(--fn);color:var(--text);">L&rsquo;agente si muove in uno <strong>spazio 2D</strong>?</td>
+      <td style="background:transparent;font-family:var(--fn);color:var(--py);"><code>x: float</code>, <code>y: float</code>, <code>angolo: float</code></td>
+      <td style="font-size:12.5px;color:var(--text2);">posizione e direzione di movimento</td>
+    </tr>
+    <tr>
+      <td style="font-family:var(--fn);color:var(--text);">Una transizione di stato avviene <strong>dopo N tick</strong>?</td>
+      <td style="background:transparent;font-family:var(--fn);color:var(--py);">un <code>timer: int = 0</code> che si incrementa ogni tick</td>
+      <td style="font-size:12.5px;color:var(--text2);"><code>timer</code> conta i tick da quando &egrave; infetto</td>
+    </tr>
+    <tr>
+      <td style="font-family:var(--fn);color:var(--text);">L&rsquo;agente ha una <strong>quantit&agrave; che varia</strong> nel tempo (energia, risorse, et&agrave;)?</td>
+      <td style="background:transparent;font-family:var(--fn);color:var(--py);">un campo numerico, es. <code>energia: float = 100.0</code></td>
+      <td style="font-size:12.5px;color:var(--text2);">non presente nel SIR base</td>
+    </tr>
+    <tr>
+      <td style="font-family:var(--fn);color:var(--text);">L&rsquo;agente ha un&rsquo;<strong>identit&agrave; fissa</strong> (per tracciarlo nei dati)?</td>
+      <td style="background:transparent;font-family:var(--fn);color:var(--py);"><code>id: int</code> — assegnato in <code>crea_agenti()</code></td>
+      <td style="font-size:12.5px;color:var(--text2);">non necessario nel SIR aggregato</td>
+    </tr>
+  </table>
+
+  <div class="note">
+    <strong>Cosa NON mettere nella dataclass</strong>
+    Non mettere i <strong>parametri del modello</strong> (numero agenti, probabilit&agrave;, raggio) &mdash; quelli vanno in <code>Config</code>. Non mettere la <strong>lista degli altri agenti</strong> &mdash; viene passata come argomento alle funzioni. La <code>dataclass Agente</code> contiene solo lo stato <em>individuale</em> dell&rsquo;agente.
+  </div>
+
+  <!-- ── FUNZIONI E PARAMETRI ── -->
+  <div class="prose" style="margin-top:28px;">
+    <p><strong>Le funzioni come regole &mdash; e come capire quali parametri servono</strong></p>
+    <p>Ogni comportamento del modello diventa una funzione separata. La firma di una funzione segue una logica precisa: <em>prende in ingresso esattamente ci&ograve; di cui ha bisogno per fare il suo lavoro</em>. Per capire quali parametri mettere, chiediti:</p>
+  </div>
+
+  <div style="border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin:12px 0;">
+    <div style="background:var(--bg3);padding:8px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text3);border-bottom:1.5px solid var(--border);">Come si costruisce la firma di una funzione</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);">
+      <div style="padding:12px 14px;border-right:1px solid var(--border);font-size:13px;color:var(--text2);line-height:1.7;">
+        <strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--nl-b);margin-bottom:6px;">Domanda</strong>
+        La funzione modifica solo <strong>un agente</strong> e usa parametri del modello?
+      </div>
+      <div style="padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.7;">
+        <strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--py-b);margin-bottom:6px;">Firma</strong>
+        <code>def muovi(a, cfg, rng)</code> &mdash; agente + config + generatore casuale
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);">
+      <div style="padding:12px 14px;border-right:1px solid var(--border);font-size:13px;color:var(--text2);line-height:1.7;">
+        <strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--nl-b);margin-bottom:6px;">Domanda</strong>
+        La funzione ha bisogno di <strong>vedere gli altri agenti</strong> (cercare vicini, confrontarsi)?
+      </div>
+      <div style="padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.7;">
+        <strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--py-b);margin-bottom:6px;">Firma</strong>
+        <code>def controlla_contagio(a, tutti, cfg, rng)</code> &mdash; aggiungi <code>tutti</code> (la lista completa)
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);">
+      <div style="padding:12px 14px;border-right:1px solid var(--border);font-size:13px;color:var(--text2);line-height:1.7;">
+        <strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--nl-b);margin-bottom:6px;">Domanda</strong>
+        La funzione &egrave; <strong>deterministica</strong> (nessuna casualit&agrave;)?
+      </div>
+      <div style="padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.7;">
+        <strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--py-b);margin-bottom:6px;">Firma</strong>
+        <code>def aggiorna_stato(a, cfg)</code> &mdash; togli <code>rng</code>, non serve
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;">
+      <div style="padding:12px 14px;border-right:1px solid var(--border);font-size:13px;color:var(--text2);line-height:1.7;">
+        <strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--nl-b);margin-bottom:6px;">Domanda</strong>
+        La funzione <strong>non usa parametri configurabili</strong> (solo l&rsquo;agente)?
+      </div>
+      <div style="padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.7;">
+        <strong style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--py-b);margin-bottom:6px;">Firma</strong>
+        <code>def nessun_infetto(agenti)</code> &mdash; togli anche <code>cfg</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="prose" style="margin-top:12px;">
+    <p>La firma standard &egrave; quindi <code>(a, tutti, cfg, rng)</code>. <strong>Rimuovi i parametri che non usi</strong> &mdash; se una funzione non ha bisogno di randomness, togliere <code>rng</code> rende la firma pi&ugrave; leggibile e la funzione pi&ugrave; facile da testare. Il principio &egrave;: <em>una funzione non dovrebbe sapere niente di pi&ugrave; di quanto le serve per fare il suo compito</em>.</p>
+  </div>
+
+  <div class="code-py" style="margin-top:4px;"><span class="cm"># Firma completa — funzione che modifica un agente usando tutti gli altri</span>
+def controlla_contagio(a, tutti, cfg, rng):
+    #                  │  │      │    └── casuale? sì → tieni rng
+    #                  │  │      └─────── usa parametri configurabili? sì → tieni cfg
+    #                  │  └────────────── vede gli altri agenti? sì → tieni tutti
+    #                  └───────────────── lavora su un agente → sempre presente
+
+<span class="cm"># Firma ridotta — funzione che guarda solo l'agente e i parametri</span>
+def aggiorna_stato(a, cfg):
+    #               │  └── usa durata_infezione da cfg → tieni cfg
+    #               └───── lavora su un agente → sempre presente
+    #               rng rimosso: nessuna casualità qui</div>
+
+  <!-- ── LIBRERIE ── -->
+  <div class="prose" style="margin-top:28px;">
+    <p><strong>Come capire quali librerie importare</strong></p>
+    <p>Un ABM Python di base usa al massimo tre librerie. Aggiungile solo quando ne hai bisogno effettivo:</p>
+  </div>
+
+  <table class="cmp-table">
+    <tr><th>Libreria</th><th>Quando importarla</th><th>Funzioni tipicamente usate</th></tr>
+    <tr>
+      <td><code>math</code></td>
+      <td style="background:transparent;color:var(--text2);font-family:var(--fn);">Se gli agenti si muovono in uno spazio 2D con angoli</td>
+      <td style="font-size:12.5px;color:var(--text2);"><code>math.sin</code>, <code>math.cos</code>, <code>math.pi</code>, <code>math.hypot</code></td>
+    </tr>
+    <tr>
+      <td><code>numpy</code></td>
+      <td style="background:transparent;color:var(--text2);font-family:var(--fn);">Se usi numeri casuali riproducibili, shuffle, o operazioni su array</td>
+      <td style="font-size:12.5px;color:var(--text2);"><code>np.random.default_rng(seed)</code>, <code>rng.uniform()</code>, <code>rng.random()</code>, <code>rng.shuffle()</code></td>
+    </tr>
+    <tr>
+      <td><code>matplotlib.pyplot</code></td>
+      <td style="background:transparent;color:var(--text2);font-family:var(--fn);">Per visualizzare la curva nel tempo (dati aggregati per tick)</td>
+      <td style="font-size:12.5px;color:var(--text2);"><code>plt.plot()</code>, <code>plt.xlabel()</code>, <code>plt.legend()</code>, <code>plt.show()</code></td>
+    </tr>
+    <tr>
+      <td><code>dataclasses</code></td>
+      <td style="background:transparent;color:var(--text2);font-family:var(--fn);">Sempre &mdash; serve per <code>@dataclass</code></td>
+      <td style="font-size:12.5px;color:var(--text2);"><code>from dataclasses import dataclass</code></td>
+    </tr>
+  </table>
+
+  <div class="note">
+    <strong>Come scoprire se serve una funzione specifica</strong>
+    Se non sai se una funzione esiste o come si chiama, il percorso pi&ugrave; veloce &egrave;: 1) pensa al <em>nome inglese del calcolo</em> che vuoi fare (es. &ldquo;hypot&rdquo; per distanza euclidea, &ldquo;uniform&rdquo; per numero casuale in un intervallo); 2) cerca nella documentazione di <code>math</code> o <code>numpy</code>. Non inventare funzioni — &egrave; molto probabile che ci sia gi&agrave; quello che ti serve.
+  </div>
+
+  <!-- ── SCHEMA COMPLETO ── -->
+  <div class="prose" style="margin-top:28px;">
+    <p><strong>Lo scheletro di partenza &mdash; copia e adatta</strong></p>
+    <p>Questo &egrave; il template minimo da cui partire per qualsiasi nuovo modello. Le parti in grigio sono sempre identiche; le parti in verde sono quelle che <em>tu</em> devi riempire in base al tuo fenomeno:</p>
+  </div>
+
+  <div class="code-py">
+<span class="cm"># ── 1. IMPORT ────────────────────────────────────────────────────────</span>
+import math
+import numpy as np
+import matplotlib.pyplot as plt
+from dataclasses import dataclass
+
+<span class="cm"># ── 2. CONFIG ────────────────────────────────────────────────────────</span>
+@dataclass
+class Config:
+    num_agenti: int   = 200        <span class="cm"># &larr; adatta questi valori al tuo modello</span>
+    ...                            <span class="cm"># altri parametri configurabili</span>
+    seed:       int   = 42
+
+<span class="cm"># ── 3. AGENTE ────────────────────────────────────────────────────────</span>
+@dataclass
+class Agente:
+    stato:  str                    <span class="cm"># &larr; decidi quali attributi servono</span>
+    x:      float
+    y:      float
+    angolo: float
+    timer:  int = 0
+
+<span class="cm"># ── 4. CREA AGENTI ───────────────────────────────────────────────────</span>
+def crea_agenti(cfg, rng):
+    agenti = []
+    for _ in range(cfg.num_agenti):
+        agenti.append(Agente(
+            stato  = ...,          <span class="cm"># &larr; stato iniziale</span>
+            x      = rng.uniform(-cfg.L, cfg.L),
+            y      = rng.uniform(-cfg.L, cfg.L),
+            angolo = rng.uniform(0, 2*math.pi),
+        ))
+    return agenti
+
+<span class="cm"># ── 5. FUNZIONI DI COMPORTAMENTO ─────────────────────────────────────</span>
+def muovi(a, cfg, rng):            <span class="cm"># &larr; una funzione per ogni regola</span>
+    ...
+
+def interagisce(a, tutti, cfg, rng):
+    ...
+
+def aggiorna_stato(a, cfg):
+    ...
+
+<span class="cm"># ── 6. CICLO PRINCIPALE ──────────────────────────────────────────────</span>
+def run(cfg, max_tick=1000):
+    rng    = np.random.default_rng(cfg.seed)
+    agenti = crea_agenti(cfg, rng)
+    storia = {}                    <span class="cm"># &larr; dizionario per raccogliere dati</span>
+
+    for tick in range(max_tick):
+        for a in agenti:
+            muovi(a, cfg, rng)
+        rng.shuffle(agenti)
+        for a in agenti:
+            interagisce(a, agenti, cfg, rng)
+        for a in agenti:
+            aggiorna_stato(a, cfg)
+        <span class="cm"># raccogli dati qui (es. conta agenti per stato)</span>
+
+    return storia
+
+<span class="cm"># ── 7. VISUALIZZAZIONE ───────────────────────────────────────────────</span>
+def visualizza(storia):
+    plt.figure(figsize=(10, 4))
+    <span class="cm"># plt.plot(...) per ogni serie di dati</span>
+    plt.xlabel("Tick")
+    plt.ylabel("Numero agenti")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+<span class="cm"># ── 8. PUNTO DI INGRESSO ─────────────────────────────────────────────</span>
+if __name__ == "__main__":
+    cfg    = Config()
+    storia = run(cfg)
+    visualizza(storia)</div>
+
+  <div class="tip" style="margin-top:16px;">
+    <strong>Come usare questo template</strong>
+    Parti sempre dal <strong>fenomeno</strong>: cosa vuoi osservare emergere? Da l&igrave; definisci gli stati dell&rsquo;agente, poi le transizioni (= le funzioni), poi i parametri che le transizioni usano (= <code>Config</code>). L&rsquo;ordine di scrittura nel file segue il template sopra. Se una funzione non riesci a scriverla subito, metti <code>pass</code> come corpo &mdash; il codice resta eseguibile e puoi riempirla dopo.
+  </div>
+
+</div>
+
+</main>
+</div><!-- /outer -->
+<footer>ABMpy &middot; Da NetLogo a Python &middot; Progetto open source &mdash; <a href="https://github.com/carolcogo/abm-netlogo-python" style="color:inherit;text-decoration:underline;">Contribuisci su GitHub</a></footer>
+
+<script>
+const sections = document.querySelectorAll('.section');
+const links    = document.querySelectorAll('.toc-link');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      links.forEach(l => l.classList.remove('active'));
+      const l = document.querySelector(`.toc-link[href="#${e.target.id}"]`);
+      if(l) l.classList.add('active');
+    }
+  });
+}, {rootMargin:'-20% 0px -70% 0px'});
+sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
