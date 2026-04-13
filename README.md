@@ -16,8 +16,8 @@ Il progetto parte dal **modello SIR** (un modello epidemiologico classico, sempl
 
 | Pagina | Contenuto |
 |--------|-----------|
-| [Guida — Modello SIR](abm/guida_sir.html) | Traduzione passo-passo di un modello epidemiologico da NetLogo a Python: agente, movimento, contagio, guarigione, ciclo principale, visualizzazione, e una ricetta generale per costruire qualsiasi ABM da zero |
-| [Dizionario — Modello SIR](abm/dizionario_sir.html) | Glossario dei termini e costrutti usati nel modello, con equivalenti NetLogo e Python a confronto |
+| [Guida — Modello SIR](index.html) | Traduzione passo-passo di un modello epidemiologico da NetLogo a Python: agente, movimento, contagio, guarigione, ciclo principale, visualizzazione, e una ricetta generale per costruire qualsiasi ABM da zero |
+| [Dizionario — Modello SIR](dizionario.html) | Glossario dei termini e costrutti usati nel modello, con equivalenti NetLogo e Python a confronto |
 
 ---
 
@@ -33,14 +33,14 @@ Ho cercato risorse in italiano che spiegassero questa transizione in modo dirett
 
 ## Vuoi contribuire?
 
-Questo è un progetto collaborativo. Se sai più di me — e probabilmente è così — il tuo contributo è prezioso.
+Questo è un progetto collaborativo. Se sai più di me (e probabilmente è così! :)) il tuo contributo è prezioso.
 
 ### Cosa sarebbe utile
 
 - **Correzioni**: se hai trovato un errore concettuale, un'imprecisione, o un modo migliore di spiegare qualcosa, apri una Issue o una Pull Request.
-- **Nuovi modelli**: la struttura della guida SIR è replicabile su altri modelli classici (RPS, Schelling, Boids, SIS, SEIR...). Se vuoi contribuire una guida per un nuovo modello, scrivi.
+- **Nuovi modelli**: la struttura della guida SIR è replicabile su altri modelli classici (Schelling, Boids, SIS, SEIR...). Se vuoi contribuire una guida per un nuovo modello, scrivi.
 - **Miglioramenti al codice Python**: il codice nei blocchi è scritto per essere leggibile, non necessariamente ottimale. Se hai suggerimenti su performance, idiomi Python più corretti, o usi migliori delle librerie, sono interessata ad ascoltarli.
-- **Traduzioni**: le guide sono in italiano perché l'italiano è la mia lingua e perché mancano risorse ABM in italiano. Ma se vuole contribuire una versione in inglese, è il benvenuto.
+- **Traduzioni**: le guide sono in italiano perché l'italiano è la mia lingua e perché mancano risorse ABM in italiano. Se vuoi contribuire una versione in inglese, sei il benvenuto.
 - **Feedback didattico**: se hai usato queste pagine per insegnare o imparare e hai suggerimenti su cosa non era chiaro, è esattamente il tipo di feedback che mi serve.
 
 ### Come contribuire
@@ -61,14 +61,16 @@ Il progetto è pubblicato su **GitHub Pages** all'indirizzo:
 https://carolcogo.github.io/abm-netlogo-python/
 ```
 
+---
+
 ## Struttura del repository
 
 ```
 abm-netlogo-python/
 ├── README.md
-└── abm/
-    ├── guida_sir.html      ← guida passo-passo: da NetLogo a Python
-    └── dizionario_sir.html ← glossario termini con confronto NetLogo / Python
+├── index.html          ← guida passo-passo: da NetLogo a Python
+├── dizionario.html     ← glossario termini con confronto NetLogo / Python
+└── og-image.png        ← anteprima social
 ```
 
 ---
