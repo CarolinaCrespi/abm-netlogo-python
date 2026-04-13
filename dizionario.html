@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dizionario SIR — Da NetLogo a Python</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f6f2;--bg2:#fff;--bg3:#f0efe9;--border:#ddd9ce;
+  --text:#1c1a16;--text2:#56544e;--text3:#9b9890;
+  --nl:#1a3a5c;--nl-l:#e8f0f8;--nl-b:#2563eb;--nl-h:#1e3a8a;
+  --py:#1a3d2b;--py-l:#e8f5ee;--py-b:#16a34a;--py-h:#14532d;
+  --fn:'Plus Jakarta Sans',sans-serif;--fm:'Fira Code',monospace;
+  --r:8px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--fn);background:var(--bg);color:var(--text);font-size:15px;line-height:1.65;}
+
+/* NAV */
+nav{background:var(--nl-h);border-bottom:3px solid var(--nl-b);position:sticky;top:0;z-index:100;}
+.ni{max-width:1060px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;height:52px;gap:1.5rem;}
+.logo{font-size:1.1rem;font-weight:700;color:#fff;letter-spacing:-.02em;}
+.logo span{color:#93c5fd;}
+.navlinks{display:flex;gap:4px;margin-left:auto;}
+.navlink{padding:5px 13px;border-radius:16px;font-size:13px;font-weight:500;color:rgba(255,255,255,.65);text-decoration:none;display:inline-block;transition:all .15s;}
+.navlink:hover{background:rgba(255,255,255,.1);color:#fff;}
+.navlink.active{background:rgba(255,255,255,.15);color:#fff;}
+
+/* SEARCH */
+.searchbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 0;position:sticky;top:55px;z-index:99;}
+.si{max-width:1060px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;gap:12px;}
+.sw{position:relative;flex:1;max-width:480px;}
+.sw input{width:100%;padding:8px 14px 8px 36px;border:1.5px solid var(--border);border-radius:20px;font-family:var(--fn);font-size:13.5px;outline:none;background:var(--bg);color:var(--text);}
+.sw input:focus{border-color:var(--nl-b);}
+.sw-ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none;}
+.s-count{font-size:12px;color:var(--text3);font-family:var(--fm);}
+
+/* PAGE */
+.page{max-width:1060px;margin:0 auto;padding:1.5rem 2rem 3rem;}
+.hero{margin-bottom:1.5rem;}
+.hero h1{font-size:1.8rem;font-weight:700;letter-spacing:-.03em;margin-bottom:4px;}
+.hero p{font-size:13.5px;color:var(--text3);max-width:640px;line-height:1.6;}
+.catnav{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;margin-bottom:1.5rem;font-size:13.5px;line-height:2.1;}
+.catnav strong{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-right:8px;}
+.catnav a{color:var(--nl-b);text-decoration:none;font-weight:500;}
+.catnav a:hover{text-decoration:underline;}
+.sep{color:var(--text3);margin:0 4px;}
+
+/* CAT SECTION */
+.cat-section{margin-bottom:2.5rem;scroll-margin-top:115px;}
+.cat-header{padding:9px 16px;border-radius:6px 6px 0 0;font-size:1.05rem;font-weight:700;letter-spacing:-.01em;display:flex;align-items:baseline;gap:10px;}
+.cat-nl{font-size:.78rem;font-weight:400;opacity:.75;}
+.cat-body{background:var(--bg2);border:1px solid var(--border);border-top:none;border-radius:0 0 6px 6px;}
+.cat-note{font-size:12.5px;color:var(--text3);font-style:italic;padding:10px 16px 0;line-height:1.5;}
+.cat-note code{font-family:var(--fm);font-size:11.5px;background:var(--bg3);border:1px solid var(--border);padding:1px 4px;border-radius:3px;color:var(--nl);font-style:normal;}
+
+/* HEADER COLORS */
+.h-agenti    {background:#e8eaf6;color:#1a237e;}
+.h-spazio    {background:#e0f7fa;color:#006064;}
+.h-movimento {background:#e3f2fd;color:#0d47a1;}
+.h-interaz   {background:#e8f5e9;color:#1b5e20;}
+.h-tempo     {background:#fce4ec;color:#880e4f;}
+.h-controllo {background:#f3e5f5;color:#4a148c;}
+.h-dati      {background:#fff8e1;color:#f57f17;}
+.h-liste     {background:#e8eaf6;color:#283593;}
+.h-math      {background:#e0f2f1;color:#004d40;}
+.h-casuale   {background:#f1f8e9;color:#33691e;}
+.h-io        {background:#fce4ec;color:#880e4f;}
+.h-special   {background:#37474f;color:#fff;}
+.h-keyword   {background:#eceff1;color:#263238;}
+
+/* ENTRY */
+.entry{border:1px solid var(--border);border-top:none;background:var(--bg2);}
+.entry:last-child{border-radius:0 0 6px 6px;}
+.entry.hidden{display:none;}
+.entry-head{display:flex;align-items:baseline;gap:8px;padding:10px 16px;cursor:pointer;user-select:none;transition:background .1s;}
+.entry-head:hover{background:var(--bg3);}
+.entry-name{font-family:var(--fm);font-size:13px;font-weight:500;color:var(--nl-b);flex-shrink:0;}
+.entry-nl{font-family:var(--fm);font-size:11px;color:var(--text3);}
+.entry-desc{font-size:12.5px;color:var(--text2);margin-left:auto;text-align:right;max-width:360px;line-height:1.4;padding-left:12px;}
+.chev{font-size:9px;color:var(--text3);transition:transform .18s;flex-shrink:0;margin-left:4px;}
+.entry.open .chev{transform:rotate(180deg);}
+.entry-body{display:none;border-top:1px solid var(--border);}
+.entry.open .entry-body{display:block;}
+
+/* SIDE BY SIDE IN ENTRY */
+.sbside{display:grid;grid-template-columns:1fr 1fr;border-bottom:none;}
+.s-nl{background:var(--nl-l);border-right:1px solid var(--border);}
+.s-py{background:var(--py-l);}
+.s-head{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.sh-nl{background:var(--nl-h);color:#fff;padding:6px 14px;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;}
+.sh-py{background:var(--py-h);color:#fff;padding:6px 14px;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;}
+.s-nl pre,.s-py pre{font-family:var(--fm);font-size:11.5px;line-height:1.75;padding:12px 14px;margin:0;overflow-x:auto;white-space:pre;}
+.s-nl pre{color:#0f2942;}
+.s-py pre{color:#0d2e1c;}
+.cm{opacity:.45;}
+
+/* DESCRIPTION PANE */
+.entry-note{font-size:12.5px;color:var(--text2);padding:10px 16px;border-top:1px solid var(--border);line-height:1.65;background:var(--bg3);}
+.entry-note code{font-family:var(--fm);font-size:11.5px;background:var(--bg2);border:1px solid var(--border);padding:1px 5px;border-radius:3px;color:var(--nl);}
+
+/* SPECIAL GRIDS */
+.kw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;padding:14px 16px;}
+.kw-card{border:1px solid var(--border);border-radius:6px;padding:10px 12px;background:var(--bg);}
+.kw-card code{font-family:var(--fm);font-size:11.5px;color:var(--nl-b);display:block;margin-bottom:4px;font-weight:500;}
+.kw-card p{font-size:12px;color:var(--text2);line-height:1.5;}
+.imp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:8px;padding:14px 16px;}
+.imp-card{border:1px solid var(--border);border-radius:6px;padding:10px 12px;background:var(--bg);}
+.imp-card code{font-family:var(--fm);font-size:11.5px;color:var(--py-b);display:block;margin-bottom:4px;font-weight:500;}
+.imp-card p{font-size:12px;color:var(--text2);line-height:1.5;}
+
+footer{text-align:center;padding:2rem;font-size:12px;color:var(--text3);border-top:1px solid var(--border);}
+@media(max-width:640px){.sbside{grid-template-columns:1fr;}.s-head{grid-template-columns:1fr;}.entry-desc{display:none;}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="ni">
+    <div class="logo">SIR<span>dict</span> &middot; Da NetLogo a Python</div>
+    <div class="navlinks">
+      <a class="navlink" href="index.html">&#128214; Guida</a>
+      <a class="navlink active" href="dizionario.html">&#128218; Dizionario</a>
+    </div>
+  </div>
+</nav>
+
+<div class="searchbar">
+  <div class="si">
+    <div class="sw">
+      <span class="sw-ico">&#8981;</span>
+      <input type="text" id="search" placeholder="Cerca termine NetLogo o Python&hellip;" oninput="doSearch()">
+    </div>
+    <span class="s-count" id="count"></span>
+  </div>
+</div>
+
+<div class="page">
+  <div class="hero">
+    <h1>Dizionario SIR &mdash; Da NetLogo a Python</h1>
+    <p>Ogni voce affianca il codice NetLogo originale (sinistra) e il codice Python equivalente (destra), basati sul modello SIR (Suscettibile&ndash;Infetto&ndash;Rimosso) in spazio continuo.</p>
+  </div>
+
+  <div class="catnav">
+    <div><strong>Categorie:</strong>
+      <a href="#agenti">Agenti</a><span class="sep">&middot;</span>
+      <a href="#spazio">Spazio e posizione</a><span class="sep">&middot;</span>
+      <a href="#movimento">Movimento</a><span class="sep">&middot;</span>
+      <a href="#interaz">Contagio</a><span class="sep">&middot;</span>
+      <a href="#tempo">Tempo e guarigione</a><span class="sep">&middot;</span>
+      <a href="#controllo">Controllo e logica</a><span class="sep">&middot;</span>
+      <a href="#dati">Dati e visualizzazione</a><span class="sep">&middot;</span>
+      <a href="#liste">Liste e insiemi</a><span class="sep">&middot;</span>
+      <a href="#math">Matematica</a><span class="sep">&middot;</span>
+      <a href="#casuale">Numeri casuali</a><span class="sep">&middot;</span>
+      <a href="#io">Input / Output</a>
+    </div>
+    <div style="margin-top:4px"><strong>Speciali:</strong>
+      <a href="#keywords">Parole chiave</a><span class="sep">&middot;</span>
+      <a href="#builtin">Attributi built-in</a><span class="sep">&middot;</span>
+      <a href="#imports">Import necessari</a>
+    </div>
+  </div>
+
+  <!-- ── AGENTI ── -->
+  <div class="cat-section" id="agenti">
+    <div class="cat-header h-agenti">Agenti <span class="cat-nl">&larr; Turtle-related</span></div>
+    <div class="cat-body">
+      <div class="cat-note">Creazione, attributi e comportamento degli agenti. Nel modello SIR ogni agente ha uno stato (S/I/R), una posizione (x, y), un angolo di movimento e un <code>timer</code> che conta da quanti tick l&rsquo;agente &egrave; infetto.</div>
+      <div id="body-agenti"></div>
+    </div>
+  </div>
+
+  <!-- ── SPAZIO ── -->
+  <div class="cat-section" id="spazio">
+    <div class="cat-header h-spazio">Spazio e posizione <span class="cat-nl">&larr; Turtle + World (coordinate continue)</span></div>
+    <div class="cat-body">
+      <div class="cat-note">Il modello SIR usa spazio continuo con coordinate float. I bordi sono connessi (toroidale). In Python le coordinate si gestiscono manualmente.</div>
+      <div id="body-spazio"></div>
+    </div>
+  </div>
+
+  <!-- ── MOVIMENTO ── -->
+  <div class="cat-section" id="movimento">
+    <div class="cat-header h-movimento">Movimento <span class="cat-nl">&larr; forward / right / heading</span></div>
+    <div class="cat-body">
+      <div class="cat-note">Il movimento in spazio continuo: rotazione casuale + avanzamento. Tutti gli agenti si muovono ad ogni tick, indipendentemente dal loro stato S/I/R.</div>
+      <div id="body-movimento"></div>
+    </div>
+  </div>
+
+  <!-- ── CONTAGIO ── -->
+  <div class="cat-section" id="interaz">
+    <div class="cat-header h-interaz">Contagio <span class="cat-nl">&larr; in-radius / ask with / random-float</span></div>
+    <div class="cat-body">
+      <div class="cat-note">La regola di interazione del SIR: solo gli agenti <code>"I"</code> cercano suscettibili entro raggio. L&rsquo;infezione &egrave; probabilistica (<code>random-float 1 &lt; prob-infezione</code>). A differenza di RPS, non c&rsquo;&egrave; una struttura ciclica ma una sola direzione di contagio.</div>
+      <div id="body-interaz"></div>
+    </div>
+  </div>
+
+  <!-- ── TEMPO E GUARIGIONE ── -->
+  <div class="cat-section" id="tempo">
+    <div class="cat-header h-tempo">Tempo e guarigione <span class="cat-nl">&larr; timer-infezione / aggiorna-stato</span></div>
+    <div class="cat-body">
+      <div class="cat-note">Concetto assente in RPS: lo stato cambia in base al <strong>tempo trascorso</strong>, non a un incontro. Il <code>timer</code> conta da quanti tick l&rsquo;agente &egrave; infetto. Quando raggiunge la soglia, l&rsquo;agente guarisce.</div>
+      <div id="body-tempo"></div>
+    </div>
+  </div>
+
+  <!-- ── CONTROLLO ── -->
+  <div class="cat-section" id="controllo">
+    <div class="cat-header h-controllo">Controllo e logica <span class="cat-nl">&larr; if / ifelse / stop / while / repeat</span></div>
+    <div class="cat-body">
+      <div class="cat-note">Condizioni, cicli, stop della simulazione. La logica &egrave; identica a NetLogo &mdash; cambia solo la sintassi.</div>
+      <div id="body-controllo"></div>
+    </div>
+  </div>
+
+  <!-- ── DATI ── -->
+  <div class="cat-section" id="dati">
+    <div class="cat-header h-dati">Dati e visualizzazione <span class="cat-nl">&larr; plot / monitors / BehaviorSpace</span></div>
+    <div class="cat-body">
+      <div class="cat-note">Raccolta metriche e visualizzazione della curva epidemica S/I/R. In NetLogo i plot si configurano nell&rsquo;interfaccia. In Python si usa Matplotlib.</div>
+      <div id="body-dati"></div>
+    </div>
+  </div>
+
+  <!-- ── LISTE ── -->
+  <div class="cat-section" id="liste">
+    <div class="cat-header h-liste">Liste e insiemi <span class="cat-nl">&larr; list / agentset / with</span></div>
+    <div class="cat-body">
+      <div class="cat-note">Raccogliere, filtrare e iterare su collezioni di agenti o valori.</div>
+      <div id="body-liste"></div>
+    </div>
+  </div>
+
+  <!-- ── MATH ── -->
+  <div class="cat-section" id="math">
+    <div class="cat-header h-math">Matematica <span class="cat-nl">&larr; sin / cos / sqrt / distance</span></div>
+    <div class="cat-body">
+      <div class="cat-note">Funzioni matematiche necessarie per il movimento continuo e il calcolo delle distanze.</div>
+      <div id="body-math"></div>
+    </div>
+  </div>
+
+  <!-- ── CASUALE ── -->
+  <div class="cat-section" id="casuale">
+    <div class="cat-header h-casuale">Numeri casuali <span class="cat-nl">&larr; random / random-float / random-seed</span></div>
+    <div class="cat-body">
+      <div class="cat-note">Generazione di numeri casuali. Il SIR usa <code>random-float</code> anche per il contagio (non solo per posizioni e angoli).</div>
+      <div id="body-casuale"></div>
+    </div>
+  </div>
+
+  <!-- ── I/O ── -->
+  <div class="cat-section" id="io">
+    <div class="cat-header h-io">Input / Output <span class="cat-nl">&larr; print / show / sliders / monitors</span></div>
+    <div class="cat-body">
+      <div class="cat-note">Configurazione parametri, stampa a schermo, export dati.</div>
+      <div id="body-io"></div>
+    </div>
+  </div>
+
+  <!-- ── SPECIALI ── -->
+  <div class="cat-section" id="keywords">
+    <div class="cat-header h-keyword">Parole chiave Python &larr; Keywords NetLogo</div>
+    <div class="cat-body">
+      <div class="cat-note" style="padding:10px 16px 0;">Costrutti sintattici fondamentali con il loro equivalente NetLogo.</div>
+      <div class="kw-grid" id="kw-grid"></div>
+    </div>
+  </div>
+
+  <div class="cat-section" id="builtin">
+    <div class="cat-header h-keyword">Attributi built-in &larr; Built-in turtle variables</div>
+    <div class="cat-body">
+      <div class="cat-note" style="padding:10px 16px 0;">In NetLogo ogni turtle ha attributi automatici. In Python li dichiariamo nel <code>@dataclass</code> dell&rsquo;agente. Il SIR aggiunge <code>timer</code> rispetto al modello RPS.</div>
+      <div class="kw-grid" id="builtin-grid"></div>
+    </div>
+  </div>
+
+  <div class="cat-section" id="imports">
+    <div class="cat-header h-special">Import necessari per il modello SIR</div>
+    <div class="cat-body">
+      <div class="cat-note" style="padding:10px 16px 0;">Tutte le righe <code>import</code> da mettere in cima al file <code>sir.py</code>. Identiche a RPS.</div>
+      <div class="imp-grid" id="imp-grid"></div>
+    </div>
+  </div>
+
+</div>
+<footer>SIR Dictionary &middot; Da NetLogo a Python puro &middot; Modelli ad agenti in spazio continuo</footer>
+
+<script>
+const DATA = [
+
+  // ── AGENTI ──────────────────────────────────────────────────────
+  {id:'dataclass', cat:'agenti',
+   name:'@dataclass class Agente',
+   nl:'turtles-own',
+   desc:'Definisce il tipo di agente con i suoi attributi. Il SIR aggiunge timer rispetto a RPS — conta da quanti tick l\'agente è infetto.',
+   code_nl:
+`turtles-own [
+  stato             <span class="cm">; "S", "I" o "R"</span>
+  timer-infezione   <span class="cm">; tick da quando è infetto</span>
+]
+
+<span class="cm">; attributi automatici di ogni turtle:</span>
+<span class="cm">; xcor  ycor  heading  color  shape</span>`,
+   code_py:
+`from dataclasses import dataclass
+import math
+
+@dataclass
+class Agente:
+    stato:  str    <span class="cm"># "S", "I" o "R"</span>
+    x:      float  <span class="cm"># ← xcor</span>
+    y:      float  <span class="cm"># ← ycor</span>
+    angolo: float  <span class="cm"># ← heading (in radianti)</span>
+    timer:  int = 0  <span class="cm"># ← timer-infezione</span>`,
+   note:'Il campo <code>timer: int = 0</code> ha un valore di default. Gli agenti suscettibili non usano mai questo campo, ma averlo a 0 di default evita di doverlo specificare ogni volta nella creazione.'
+  },
+
+  {id:'create', cat:'agenti',
+   name:'crea_agenti(cfg, rng)',
+   nl:'create-turtles N [...]',
+   desc:'Crea tutti gli agenti S e I con posizione casuale. Gli R non esistono all\'inizio — emergono durante la simulazione.',
+   code_nl:
+`to crea-agenti
+  create-turtles num-suscettibili [
+    set stato "S"
+    set color blue
+    setxy random-xcor random-ycor
+  ]
+  create-turtles num-infetti [
+    set stato "I"
+    set color red
+    set timer-infezione 0
+    setxy random-xcor random-ycor
+  ]
+end`,
+   code_py:
+`def crea_agenti(cfg, rng):
+    agenti = []
+    for stato, n in [("S", cfg.num_S),
+                     ("I", cfg.num_I)]:
+        for _ in range(n):
+            agenti.append(Agente(
+                stato  = stato,
+                x      = rng.uniform(-cfg.L, cfg.L),
+                y      = rng.uniform(-cfg.L, cfg.L),
+                angolo = rng.uniform(0, 2*math.pi),
+                timer  = 0
+            ))
+    return agenti`,
+   note:'A differenza di RPS (tre tipi), il SIR parte con solo due tipi: S e I. Gli R appaiono automaticamente quando gli I guariscono. Non serve creare agenti R nel setup.'
+  },
+
+  {id:'ask', cat:'agenti',
+   name:'for a in agenti: funzione(a)',
+   nl:'ask turtles [...]',
+   desc:'Esegue una procedura su tutti gli agenti. In Python è un normale for loop.',
+   code_nl:
+`ask turtles [ move ]
+ask turtles [ controlla-contagio ]
+ask turtles [ aggiorna-stato ]`,
+   code_py:
+`for a in agenti:
+    muovi(a, cfg, rng)
+
+for a in agenti:
+    controlla_contagio(a, agenti, cfg, rng)
+
+for a in agenti:
+    aggiorna_stato(a, cfg)`,
+   note:'In NetLogo <code>ask turtles</code> usa ordine casuale per default. Per replicarlo in Python usa <code>rng.shuffle(agenti)</code> prima del loop del contagio — importa perché gli infetti modificano lo stato dei suscettibili.'
+  },
+
+  {id:'set-stato', cat:'agenti',
+   name:'agente.stato = valore',
+   nl:'set stato "I" / set color red',
+   desc:'Modifica lo stato di un agente. In NetLogo si aggiorna anche il colore separatamente. In Python c\'è solo lo stato — il colore si usa solo per la visualizzazione.',
+   code_nl:
+`<span class="cm">; dentro controlla-contagio:</span>
+ask vicino [
+  set stato "I"
+  set timer-infezione 0
+  set color red
+]
+
+<span class="cm">; dentro aggiorna-stato:</span>
+set stato "R"
+set color gray`,
+   code_py:
+`<span class="cm"># dentro controlla_contagio:</span>
+b.stato = "I"
+b.timer = 0
+
+<span class="cm"># dentro aggiorna_stato:</span>
+a.stato = "R"
+a.timer = 0`,
+   note:'In Python si modifica direttamente l\'attributo dell\'oggetto. Non serve <code>ask</code> perché ogni variabile che punta a un oggetto è già un riferimento diretto all\'oggetto.'
+  },
+
+  {id:'count', cat:'agenti',
+   name:'sum(1 for a in agenti if a.stato == ...)',
+   nl:'count turtles with [stato = "I"]',
+   desc:'Conta gli agenti in un certo stato. Usato per registrare la curva S/I/R e per la condizione di stop.',
+   code_nl:
+`let s-count count turtles with [stato = "S"]
+let i-count count turtles with [stato = "I"]
+let r-count count turtles with [stato = "R"]`,
+   code_py:
+`s_count = sum(1 for a in agenti if a.stato == "S")
+i_count = sum(1 for a in agenti if a.stato == "I")
+r_count = sum(1 for a in agenti if a.stato == "R")`,
+   note:'<code>sum(1 for a in agenti if condizione)</code> è la forma più concisa per contare con condizione. Equivale a filtrare la lista e contare gli elementi rimasti.'
+  },
+
+  // ── SPAZIO ──────────────────────────────────────────────────────
+  {id:'xcor-ycor', cat:'spazio',
+   name:'agente.x / agente.y',
+   nl:'xcor / ycor',
+   desc:'Coordinate continue dell\'agente nello spazio. In NetLogo sono attributi built-in, in Python li dichiariamo nel @dataclass.',
+   code_nl:
+`<span class="cm">; leggere la posizione:</span>
+print xcor
+print ycor
+
+<span class="cm">; impostare la posizione:</span>
+setxy 5.0 -3.2`,
+   code_py:
+`<span class="cm"># leggere la posizione:</span>
+print(a.x)
+print(a.y)
+
+<span class="cm"># impostare la posizione:</span>
+a.x = 5.0
+a.y = -3.2`,
+   note:'In NetLogo <code>xcor</code> e <code>ycor</code> sono built-in. In Python sono semplicemente due campi float dichiarati nel <code>@dataclass</code>.'
+  },
+
+  {id:'random-xcor', cat:'spazio',
+   name:'rng.uniform(-L, L)',
+   nl:'random-xcor / random-ycor',
+   desc:'Posizione casuale dentro i bordi del mondo.',
+   code_nl:
+`<span class="cm">; mondo: -16 a +16 (dalle impostazioni)</span>
+setxy random-xcor random-ycor`,
+   code_py:
+`L = 16.0
+a.x = rng.uniform(-L, L)
+a.y = rng.uniform(-L, L)`,
+   note:'<code>rng.uniform(-L, L)</code> genera un float casuale nell\'intervallo [-L, L], uniforme — equivalente a <code>random-xcor</code> di NetLogo.'
+  },
+
+  {id:'wrapping', cat:'spazio',
+   name:'((x + L) % (2*L)) - L',
+   nl:'world-wrapping (automatico con forward)',
+   desc:'Bordi toroidali — quando un agente esce da un lato rientra dall\'altro.',
+   code_nl:
+`<span class="cm">; NetLogo fa il wrapping automaticamente:</span>
+fd 1  <span class="cm">; se esce da destra → rientra a sinistra</span>`,
+   code_py:
+`L = 16.0
+a.x = ((a.x + L) % (2*L)) - L
+a.y = ((a.y + L) % (2*L)) - L
+
+<span class="cm"># es: x=17 → ((33)%32)-16 = -15</span>`,
+   note:'La formula sposta l\'origine (+L), applica il modulo sull\'intervallo pieno (2*L), poi riporta all\'origine originale (-L). Funziona per qualsiasi valore di x, anche molto fuori dai bordi.'
+  },
+
+  // ── MOVIMENTO ───────────────────────────────────────────────────
+  {id:'heading', cat:'movimento',
+   name:'agente.angolo (float, radianti)',
+   nl:'heading (gradi, 0-360)',
+   desc:'La direzione in cui punta l\'agente. NetLogo usa gradi, Python usa radianti.',
+   code_nl:
+`heading = 0    <span class="cm">; nord (su)</span>
+heading = 90   <span class="cm">; est (destra)</span>
+rt 45          <span class="cm">; ruota a destra di 45°</span>
+rt random 360  <span class="cm">; angolo casuale</span>`,
+   code_py:
+`import math
+
+angolo = 0            <span class="cm"># est (destra)</span>
+angolo = math.pi/2    <span class="cm"># nord (su)</span>
+angolo += math.radians(45)  <span class="cm"># ruota</span>
+angolo = rng.uniform(0, 2*math.pi)  <span class="cm"># casuale</span>`,
+   note:'La convenzione degli angoli è diversa (NetLogo: 0=Nord, Python: 0=Est), ma per il modello SIR non importa: l\'angolo è sempre scelto uniformemente casuale, quindi la distribuzione è identica in entrambi i casi.'
+  },
+
+  {id:'rt-random', cat:'movimento',
+   name:'rng.uniform(0, 2*math.pi)',
+   nl:'rt random 360',
+   desc:'Sceglie una nuova direzione completamente casuale ad ogni tick.',
+   code_nl:
+`rt random 360  <span class="cm">; nuova direzione casuale</span>`,
+   code_py:
+`a.angolo = rng.uniform(0, 2 * math.pi)`,
+   note:'<code>rt random 360</code> copre tutto il cerchio — equivale a scegliere una direzione completamente nuova. In Python <code>rng.uniform(0, 2*math.pi)</code> fa la stessa cosa in radianti.'
+  },
+
+  {id:'forward', cat:'movimento',
+   name:'x += v*cos(ang) / y += v*sin(ang)',
+   nl:'forward N (fd N)',
+   desc:'Avanza di N unità nella direzione corrente. In Python si scompone il vettore in componenti x e y.',
+   code_nl:
+`fd 1  <span class="cm">; avanza di 1 unità</span>`,
+   code_py:
+`velocita = 1.0
+a.x += velocita * math.cos(a.angolo)
+a.y += velocita * math.sin(a.angolo)`,
+   note:'<code>cos</code> dà la componente orizzontale (x), <code>sin</code> quella verticale (y). Moltiplicati per la velocità danno lo spostamento esatto che NetLogo calcola internamente.'
+  },
+
+  {id:'move-complete', cat:'movimento',
+   name:'def muovi(a, cfg, rng)',
+   nl:'to move ... end',
+   desc:'La funzione completa di movimento — identica a RPS, tutti gli agenti si muovono indipendentemente dallo stato S/I/R.',
+   code_nl:
+`to move
+  rt random 360
+  fd 1
+end`,
+   code_py:
+`def muovi(a, cfg, rng):
+    a.angolo = rng.uniform(0, 2 * math.pi)
+    a.x += cfg.velocita * math.cos(a.angolo)
+    a.y += cfg.velocita * math.sin(a.angolo)
+    L = cfg.L
+    a.x = ((a.x + L) % (2*L)) - L
+    a.y = ((a.y + L) % (2*L)) - L`,
+   note:'Nel SIR tutti gli agenti si muovono — S, I e R — ad ogni tick. Non c\'è differenza di movimento tra gli stati. La velocità di movimento influenza la frequenza dei contatti e quindi il tasso di contagio.'
+  },
+
+  // ── CONTAGIO ────────────────────────────────────────────────────
+  {id:'in-radius', cat:'interaz',
+   name:'math.hypot(ax-bx, ay-by) <= raggio',
+   nl:'turtles in-radius N with [stato = "S"]',
+   desc:'Trova agenti suscettibili entro una certa distanza dall\'agente infetto.',
+   code_nl:
+`<span class="cm">; trova suscettibili nel raggio:</span>
+let vicini turtles in-radius 1
+    with [stato = "S"]`,
+   code_py:
+`import math
+
+raggio = 1.0
+for b in tutti:
+    if b is a or b.stato != "S":
+        continue
+    dist = math.hypot(a.x - b.x, a.y - b.y)
+    if dist <= raggio:
+        <span class="cm"># b è suscettibile e nel raggio</span>
+        ...`,
+   note:'<code>math.hypot(dx, dy)</code> calcola √(dx²+dy²) — la distanza euclidea. Questo è ciò che NetLogo calcola internamente per <code>in-radius</code>. Il filtro <code>b.stato != "S"</code> è l\'equivalente di <code>with [stato = "S"]</code>.'
+  },
+
+  {id:'random-float-contagio', cat:'interaz',
+   name:'rng.random() < cfg.prob_infezione',
+   nl:'random-float 1 < prob-infezione',
+   desc:'Evento probabilistico: il contagio avviene solo con probabilità β. Questa è la differenza principale rispetto a RPS (dove il contagio era deterministico).',
+   code_nl:
+`if random-float 1 < prob-infezione [
+  set stato "I"
+  set timer-infezione 0
+  set color red
+]`,
+   code_py:
+`if rng.random() < cfg.prob_infezione:
+    b.stato = "I"
+    b.timer = 0`,
+   note:'<code>rng.random()</code> genera un float casuale in [0, 1). Il confronto <code>< prob_infezione</code> restituisce True con probabilità esattamente <code>prob_infezione</code>. Se <code>prob_infezione = 0.3</code>, il 30% dei contatti entro raggio porta a contagio.'
+  },
+
+  {id:'check-contagio-complete', cat:'interaz',
+   name:'def controlla_contagio(a, tutti, cfg, rng)',
+   nl:'to controlla-contagio ... end',
+   desc:'La funzione completa di contagio — solo gli infetti agiscono, cercano suscettibili entro raggio e li contagiano con probabilità β.',
+   code_nl:
+`to controlla-contagio
+  if stato = "I" [
+    ask turtles in-radius 1
+        with [stato = "S"] [
+      if random-float 1 < prob-infezione [
+        set stato "I"
+        set timer-infezione 0
+        set color red
+      ]
+    ]
+  ]
+end`,
+   code_py:
+`def controlla_contagio(a, tutti, cfg, rng):
+    <span class="cm"># solo gli infetti cercano vittime</span>
+    if a.stato != "I":
+        return
+
+    for b in tutti:
+        if b is a or b.stato != "S":
+            continue
+
+        <span class="cm"># in-radius: distanza euclidea</span>
+        dist = math.hypot(a.x - b.x, a.y - b.y)
+        if dist <= cfg.raggio:
+            <span class="cm"># random-float 1 < prob-infezione</span>
+            if rng.random() < cfg.prob_infezione:
+                b.stato = "I"
+                b.timer = 0`,
+   note:'La struttura segue esattamente NetLogo: prima si controlla se l\'agente è I (se no, esci subito), poi si itera sui vicini S entro raggio, poi si applica la probabilità. Il <code>return</code> iniziale è l\'equivalente di <code>if stato = "I" [...]</code>.'
+  },
+
+  {id:'nobody', cat:'interaz',
+   name:'if b is not None:',
+   nl:'if nearby != nobody [...]',
+   desc:'Verificare che l\'agente trovato esista. In Python l\'equivalente di nobody è None.',
+   code_nl:
+`let nearby one-of turtles in-radius 1
+if nearby != nobody [
+  <span class="cm">; esiste un vicino</span>
+]`,
+   code_py:
+`vicino = None
+for b in tutti:
+    if math.hypot(a.x-b.x, a.y-b.y) <= raggio:
+        vicino = b
+        break
+
+if vicino is not None:
+    <span class="cm"># esiste un vicino</span>
+    pass`,
+   note:'In Python <code>None</code> è il valore che indica "nessun oggetto" — equivalente a <code>nobody</code> in NetLogo.'
+  },
+
+  // ── TEMPO E GUARIGIONE ──────────────────────────────────────────
+  {id:'timer', cat:'tempo',
+   name:'agente.timer',
+   nl:'timer-infezione',
+   desc:'Contatore del tempo trascorso dall\'infezione. Viene incrementato ad ogni tick e azzerato quando l\'agente viene infettato.',
+   code_nl:
+`turtles-own [ timer-infezione ]
+
+<span class="cm">; azzerare al momento del contagio:</span>
+set timer-infezione 0
+
+<span class="cm">; incrementare ogni tick:</span>
+set timer-infezione timer-infezione + 1`,
+   code_py:
+`@dataclass
+class Agente:
+    ...
+    timer: int = 0  <span class="cm"># ← timer-infezione</span>
+
+<span class="cm"># azzerare al momento del contagio:</span>
+b.timer = 0
+
+<span class="cm"># incrementare ogni tick:</span>
+a.timer += 1`,
+   note:'Il <code>timer</code> è un attributo aggiuntivo dell\'agente rispetto a RPS — è la struttura dati che permette al modello di "ricordare" da quanto tempo un agente è infetto, senza bisogno di strutture globali.'
+  },
+
+  {id:'aggiorna-stato', cat:'tempo',
+   name:'def aggiorna_stato(a, cfg)',
+   nl:'to aggiorna-stato ... end',
+   desc:'Procedura assente in RPS: aggiorna lo stato degli agenti in base al tempo. Quando il timer supera la soglia, l\'infetto guarisce.',
+   code_nl:
+`to aggiorna-stato
+  if stato = "I" [
+    set timer-infezione
+        timer-infezione + 1
+    if timer-infezione >= durata-infezione [
+      set stato "R"
+      set color gray
+    ]
+  ]
+end`,
+   code_py:
+`def aggiorna_stato(a, cfg):
+    if a.stato != "I":
+        return
+
+    a.timer += 1  <span class="cm"># timer-infezione + 1</span>
+
+    if a.timer >= cfg.durata_infezione:
+        a.stato = "R"
+        a.timer = 0  <span class="cm"># reset (facoltativo)</span>`,
+   note:'Questa procedura viene chiamata <em>dopo</em> il contagio nel ciclo principale. Così un agente appena infettato ha timer=0 e non guarisce subito. L\'ordine delle procedure nel ciclo determina la semantica del modello.'
+  },
+
+  {id:'durata', cat:'tempo',
+   name:'cfg.durata_infezione',
+   nl:'durata-infezione (slider)',
+   desc:'Numero di tick che un agente resta infetto prima di diventare R. Parametro configurabile.',
+   code_nl:
+`<span class="cm">; slider nell'interfaccia:</span>
+durata-infezione  50
+
+<span class="cm">; usato in aggiorna-stato:</span>
+if timer-infezione >= durata-infezione [
+  set stato "R"
+]`,
+   code_py:
+`@dataclass
+class Config:
+    durata_infezione: int = 50
+
+<span class="cm"># usato in aggiorna_stato:</span>
+if a.timer >= cfg.durata_infezione:
+    a.stato = "R"`,
+   note:'Aumentare <code>durata_infezione</code> allunga il periodo infettivo — ogni agente ha più tempo per contagiare altri, amplificando l\'epidemia. È uno dei parametri chiave del modello SIR.'
+  },
+
+  // ── CONTROLLO ───────────────────────────────────────────────────
+  {id:'if', cat:'controllo',
+   name:'if condizione: / elif: / else:',
+   nl:'if [...] / ifelse [...] [...] [...]',
+   desc:'Esecuzione condizionale. La logica è identica — cambia solo la sintassi.',
+   code_nl:
+`if stato = "I" [
+  <span class="cm">; solo gli infetti agiscono</span>
+]
+
+ifelse energia > 0 [
+  move
+] [
+  stop
+]`,
+   code_py:
+`if a.stato == "I":
+    <span class="cm"># solo gli infetti agiscono</span>
+    pass
+
+if energia > 0:
+    muovi(a, cfg, rng)
+else:
+    return`,
+   note:'In Python <code>if/elif/else</code> equivale a <code>if/ifelse</code> di NetLogo. Le parentesi quadre diventano i due punti + indentazione.'
+  },
+
+  {id:'stop', cat:'controllo',
+   name:'break / return',
+   nl:'stop',
+   desc:'Interrompe il ciclo o la funzione. In Python si usa break (ciclo) o return (funzione).',
+   code_nl:
+`<span class="cm">; ferma la simulazione:</span>
+if nessun-infetto? [ stop ]
+
+<span class="cm">; esce da una procedura:</span>
+if stato != "I" [ stop ]`,
+   code_py:
+`<span class="cm"># ferma il ciclo for:</span>
+if storia["I"][-1] == 0:
+    break
+
+<span class="cm"># esce dalla funzione (early return):</span>
+if a.stato != "I":
+    return`,
+   note:'<code>return</code> senza valore esce dalla funzione — equivale a <code>stop</code> dentro una procedura NetLogo. È una tecnica comune per evitare rami annidati: "se la condizione non è soddisfatta, esci subito".'
+  },
+
+  {id:'repeat', cat:'controllo',
+   name:'for _ in range(N):',
+   nl:'repeat N [...]',
+   desc:'Ripete un blocco N volte.',
+   code_nl:
+`repeat 10 [ move ]`,
+   code_py:
+`for _ in range(10):
+    muovi(a, cfg, rng)`,
+   note:'<code>for _ in range(N)</code> è l\'equivalente esatto di <code>repeat N</code>. Il trattino basso <code>_</code> indica che l\'indice non viene usato.'
+  },
+
+  {id:'and-or', cat:'controllo',
+   name:'and / or / not',
+   nl:'and / or / not',
+   desc:'Operatori logici. Identici in NetLogo e Python.',
+   code_nl:
+`if (stato = "I" and timer-infezione > 10) [...]`,
+   code_py:
+`if a.stato == "I" and a.timer > 10:
+    pass`,
+   note:'Gli operatori <code>and</code>, <code>or</code>, <code>not</code> hanno lo stesso significato in entrambi i linguaggi.'
+  },
+
+  // ── DATI ────────────────────────────────────────────────────────
+  {id:'plot', cat:'dati',
+   name:'plt.plot(storia["S"], ...)',
+   nl:'plot count turtles with [stato = "S"]',
+   desc:'Visualizza la curva epidemica S/I/R. In NetLogo il plot si aggiorna automaticamente. In Python si raccolgono i dati e si plotta alla fine.',
+   code_nl:
+`<span class="cm">; configurato nell'interfaccia:</span>
+plot count turtles with [stato = "S"]
+plot count turtles with [stato = "I"]
+plot count turtles with [stato = "R"]`,
+   code_py:
+`import matplotlib.pyplot as plt
+
+plt.figure(figsize=(10, 4))
+plt.plot(storia["S"], color="steelblue",  label="Suscettibili (S)")
+plt.plot(storia["I"], color="crimson",    label="Infetti (I)")
+plt.plot(storia["R"], color="gray",       label="Rimossi (R)")
+plt.xlabel("Tick")
+plt.ylabel("Numero agenti")
+plt.title("Modello SIR — curva epidemica")
+plt.legend()
+plt.show()`,
+   note:'Il risultato atteso è la classica curva epidemica: S scende, I sale poi scende a campana, R sale monotonicamente. La somma S+I+R è costante uguale al numero totale di agenti.'
+  },
+
+  {id:'storia', cat:'dati',
+   name:'storia = {"S": [], "I": [], "R": []}',
+   nl:'(valori dei monitor — automatici)',
+   desc:'Raccoglie i conteggi S/I/R per ogni tick. Equivalente dei monitor e dei plot di NetLogo.',
+   code_nl:
+`<span class="cm">; NetLogo aggiorna i monitor automaticamente:</span>
+<span class="cm">; S: count turtles with [stato="S"]</span>
+<span class="cm">; I: count turtles with [stato="I"]</span>
+<span class="cm">; R: count turtles with [stato="R"]</span>`,
+   code_py:
+`storia = {"S": [], "I": [], "R": []}
+
+<span class="cm"># nel ciclo principale, ogni tick:</span>
+for stato in storia:
+    storia[stato].append(
+        sum(1 for a in agenti if a.stato == stato)
+    )`,
+   note:'Il dizionario <code>storia</code> accumula una lista per ogni stato. Alla fine ogni lista ha tanti elementi quanti sono i tick — esattamente i dati che NetLogo mostra nel plot. La condizione di stop legge l\'ultimo valore con <code>storia["I"][-1]</code>.'
+  },
+
+  {id:'config', cat:'dati',
+   name:'@dataclass Config',
+   nl:'slider / input widget',
+   desc:'Parametri configurabili del modello SIR. In NetLogo sono slider. In Python sono campi di una dataclass.',
+   code_nl:
+`num-suscettibili  490
+num-infetti        10
+prob-infezione    0.3
+durata-infezione   50`,
+   code_py:
+`@dataclass
+class Config:
+    num_S:            int   = 490
+    num_I:            int   = 10
+    prob_infezione:   float = 0.3
+    durata_infezione: int   = 50
+    velocita:         float = 1.0
+    raggio:           float = 1.0
+    L:                float = 16.0
+    seed:             int   = 42`,
+   note:'Il vantaggio di Config come dataclass: si possono cambiare i parametri da codice senza toccare la logica. Per studiare l\'effetto del distanziamento: <code>Config(raggio=0.5)</code>. Per una malattia più contagiosa: <code>Config(prob_infezione=0.8)</code>.'
+  },
+
+  {id:'stop-cond', cat:'dati',
+   name:'storia["I"][-1] == 0',
+   nl:'nessun-infetto? → count turtles with [stato="I"] = 0',
+   desc:'Condizione di stop: la simulazione termina quando non ci sono più infetti.',
+   code_nl:
+`to-report nessun-infetto?
+  report count turtles
+      with [stato = "I"] = 0
+end
+
+<span class="cm">; in to go:</span>
+if nessun-infetto? [ stop ]`,
+   code_py:
+`<span class="cm"># nel ciclo principale:</span>
+if storia["I"][-1] == 0:
+    print(f"Epidemia terminata al tick {tick}")
+    break
+
+<span class="cm"># oppure, senza storia:</span>
+if all(a.stato != "I" for a in agenti):
+    break`,
+   note:'<code>storia["I"][-1]</code> legge l\'ultimo elemento della lista I — il valore del tick corrente. È equivalente a <code>count turtles with [stato="I"] = 0</code>. La seconda forma usa una generator expression con <code>all()</code>.'
+  },
+
+  // ── LISTE ───────────────────────────────────────────────────────
+  {id:'agentset-list', cat:'liste',
+   name:'lista Python (list)',
+   nl:'agentset / turtles',
+   desc:'La raccolta di tutti gli agenti. In NetLogo è un agentset built-in. In Python è una normale lista.',
+   code_nl:
+`turtles
+count turtles
+ask turtles [...]`,
+   code_py:
+`agenti = []
+len(agenti)
+for a in agenti:
+    ...`,
+   note:'In Python la lista non ha magie built-in — ma ha una sintassi diretta. <code>len()</code> al posto di <code>count</code>, <code>for a in agenti</code> al posto di <code>ask turtles</code>.'
+  },
+
+  {id:'with-filter', cat:'liste',
+   name:'[a for a in agenti if condizione]',
+   nl:'turtles with [condizione]',
+   desc:'Filtra gli agenti che soddisfano una condizione.',
+   code_nl:
+`turtles with [stato = "S"]
+turtles in-radius 1 with [stato = "S"]`,
+   code_py:
+`suscettibili = [a for a in agenti if a.stato == "S"]
+
+vicini_S = [b for b in agenti
+            if b is not a
+            and b.stato == "S"
+            and math.hypot(a.x-b.x, a.y-b.y) <= 1.0]`,
+   note:'La list comprehension <code>[a for a in agenti if condizione]</code> è l\'equivalente di <code>turtles with [condizione]</code>. Si possono combinare più condizioni con <code>and</code>.'
+  },
+
+  // ── MATH ────────────────────────────────────────────────────────
+  {id:'hypot', cat:'math',
+   name:'math.hypot(dx, dy)',
+   nl:'distance agente / distancexy x y',
+   desc:'Distanza euclidea tra due punti. Equivalente di distance e distancexy di NetLogo.',
+   code_nl:
+`distance nearby-turtle
+distancexy 5 3`,
+   code_py:
+`dist = math.hypot(a.x - b.x, a.y - b.y)
+dist = math.hypot(a.x - 5, a.y - 3)`,
+   note:'<code>math.hypot(dx, dy)</code> calcola √(dx²+dy²) — il teorema di Pitagora. Questa è la funzione chiave per replicare <code>in-radius</code>.'
+  },
+
+  {id:'cos-sin', cat:'math',
+   name:'math.cos(angolo) / math.sin(angolo)',
+   nl:'(usati internamente da forward)',
+   desc:'Scomposizione di un vettore nelle sue componenti x e y. Usati per implementare forward.',
+   code_nl:
+`fd 1  <span class="cm">; internamente: dx=sin(h)*1, dy=cos(h)*1</span>`,
+   code_py:
+`dx = velocita * math.cos(angolo)
+dy = velocita * math.sin(angolo)
+a.x += dx
+a.y += dy`,
+   note:'Cos dà la componente x (orizzontale), sin la componente y (verticale). Il vettore risultante ha lunghezza uguale alla velocità.'
+  },
+
+  {id:'pi', cat:'math',
+   name:'math.pi',
+   nl:'pi (costante built-in)',
+   desc:'Pi greco (3.14159...). In NetLogo è built-in, in Python si importa da math.',
+   code_nl:
+`print pi
+rt random 360  <span class="cm">; angolo in gradi</span>`,
+   code_py:
+`import math
+math.pi  <span class="cm"># 3.14159...</span>
+a.angolo = rng.uniform(0, 2 * math.pi)`,
+   note:'Un giro completo = 2π radianti = 360 gradi. <code>math.radians()</code> e <code>math.degrees()</code> convertono tra le due unità.'
+  },
+
+  // ── CASUALE ─────────────────────────────────────────────────────
+  {id:'random-seed', cat:'casuale',
+   name:'np.random.default_rng(seed)',
+   nl:'random-seed N',
+   desc:'Fissa il seed per simulazioni riproducibili.',
+   code_nl:
+`random-seed 42`,
+   code_py:
+`import numpy as np
+rng = np.random.default_rng(seed=42)`,
+   note:'Il generatore <code>rng</code> va creato una sola volta e passato a tutte le funzioni. Stessa seed = stessa simulazione. Utile per debug e confronto di scenari.'
+  },
+
+  {id:'random-float', cat:'casuale',
+   name:'rng.random() / rng.uniform(a, b)',
+   nl:'random-float N / random-xcor',
+   desc:'Numero float casuale. Nel SIR rng.random() viene usato anche per il contagio (probabilità), non solo per posizioni e angoli.',
+   code_nl:
+`random-float 1.0    <span class="cm">; float in [0, 1)</span>
+random-xcor         <span class="cm">; posizione casuale</span>
+random 360          <span class="cm">; intero in [0, 360)</span>`,
+   code_py:
+`rng.random()               <span class="cm"># float in [0, 1)</span>
+rng.uniform(-16, 16)       <span class="cm"># posizione casuale</span>
+rng.uniform(0, 2*math.pi)  <span class="cm"># angolo casuale</span>
+rng.integers(0, 360)       <span class="cm"># intero casuale</span>`,
+   note:'<code>rng.random()</code> (senza argomenti) genera un float in [0, 1) — è più conciso di <code>rng.uniform(0, 1)</code> e si usa tipicamente per i confronti probabilistici come <code>rng.random() < prob_infezione</code>.'
+  },
+
+  {id:'shuffle', cat:'casuale',
+   name:'rng.shuffle(lista)',
+   nl:'(ordine casuale di ask turtles)',
+   desc:'Mescola la lista degli agenti prima del ciclo di contagio, replicando l\'ordine casuale di ask turtles in NetLogo.',
+   code_nl:
+`<span class="cm">; ask usa automaticamente ordine casuale:</span>
+ask turtles [ controlla-contagio ]`,
+   code_py:
+`<span class="cm"># replica l'ordine casuale di ask:</span>
+rng.shuffle(agenti)
+for a in agenti:
+    controlla_contagio(a, agenti, cfg, rng)`,
+   note:'Nel SIR l\'ordine del contagio è rilevante: il primo infetto a "trovare" un suscettibile lo prende. Mescolare la lista garantisce che non ci siano agenti sistematicamente favoriti.'
+  },
+
+  // ── I/O ─────────────────────────────────────────────────────────
+  {id:'print', cat:'io',
+   name:'print()',
+   nl:'print / show',
+   desc:'Stampa a schermo durante la simulazione.',
+   code_nl:
+`show (word "Tick " ticks ": infetti " count turtles with [stato="I"])`,
+   code_py:
+`print(f"Tick {tick}: infetti {sum(1 for a in agenti if a.stato=='I')}")`,
+   note:'Le f-string Python (<code>f"..."</code>) sono l\'equivalente di <code>(word ...)</code> in NetLogo.'
+  },
+
+  {id:'export', cat:'io',
+   name:'df.to_csv() / plt.savefig()',
+   nl:'export-world / export-plot',
+   desc:'Salva i dati della curva epidemica o il grafico su file.',
+   code_nl:
+`export-world "risultati.csv"
+export-plot "grafico.png"`,
+   code_py:
+`import pandas as pd
+
+df = pd.DataFrame(storia)
+df.index.name = "tick"
+df.to_csv("sir_risultati.csv")
+
+plt.savefig("sir_curva.png", dpi=150, bbox_inches="tight")`,
+   note:'<code>pd.DataFrame(storia)</code> converte il dizionario in una tabella Pandas — una riga per tick, tre colonne (S, I, R). Utile per analisi successive o confronto tra simulazioni con parametri diversi.'
+  },
+
+];
+
+// ── KEYWORDS ──────────────────────────────────────────────────────
+const KEYWORDS = [
+  {kw:'def nome(parametri):',  nl:'to nome ... end',          desc:'Definisce una funzione. Il corpo è indentato.'},
+  {kw:'return valore',         nl:'report valore',             desc:'Restituisce un valore da una funzione.'},
+  {kw:'return',                nl:'stop (in una procedura)',   desc:'Esce dalla funzione senza restituire nulla — "early return".'},
+  {kw:'@dataclass',            nl:'turtles-own [...] / breed', desc:'Genera automaticamente __init__ per una classe di dati.'},
+  {kw:'for a in lista:',       nl:'ask agenti [...]',          desc:'Itera su ogni elemento di una lista.'},
+  {kw:'if condizione:',        nl:'if [...] / ifelse',         desc:'Esecuzione condizionale.'},
+  {kw:'break',                 nl:'stop (in un ciclo)',        desc:'Esce dal ciclo corrente.'},
+  {kw:'import math',           nl:'(built-in in NetLogo)',     desc:'Importa le funzioni matematiche (sin, cos, hypot, pi...).'},
+  {kw:'import numpy as np',    nl:'(built-in in NetLogo)',     desc:'Importa NumPy per array e numeri casuali.'},
+  {kw:'#  commento',           nl:'; commento',                desc:'Commento nel codice.'},
+  {kw:'==  !=  <  >  <=  >=', nl:'=  !=  <  >  <=  >=',      desc:'Operatori di confronto. Nota: == invece di = per l\'uguaglianza.'},
+  {kw:'and  or  not',          nl:'and  or  not',              desc:'Operatori logici. Identici a NetLogo.'},
+  {kw:'if __name__ == "__main__":', nl:'(non esiste)',         desc:'Il codice in questo blocco viene eseguito solo se il file è avviato direttamente.'},
+];
+
+// ── BUILT-IN ──────────────────────────────────────────────────────
+const BUILTINS = [
+  {kw:'agente.stato',  nl:'stato (turtles-own)',  desc:'Stato dell\'agente: "S", "I" o "R".'},
+  {kw:'agente.x',      nl:'xcor',                 desc:'Coordinata x (float) dell\'agente.'},
+  {kw:'agente.y',      nl:'ycor',                 desc:'Coordinata y (float) dell\'agente.'},
+  {kw:'agente.angolo', nl:'heading (in rad)',      desc:'Direzione di movimento in radianti.'},
+  {kw:'agente.timer',  nl:'timer-infezione',       desc:'Tick da quando l\'agente è infetto. 0 per S e R. Assente in RPS.'},
+];
+
+// ── IMPORTS ───────────────────────────────────────────────────────
+const IMPORTS = [
+  {kw:'import math',                          nl:'(built-in)', desc:'sin, cos, hypot, pi — per movimento e distanze.'},
+  {kw:'import numpy as np',                   nl:'(built-in)', desc:'Array e generatore casuale (rng).'},
+  {kw:'import matplotlib.pyplot as plt',      nl:'plot',       desc:'Visualizzazione della curva epidemica.'},
+  {kw:'from dataclasses import dataclass',    nl:'turtles-own', desc:'Decoratore @dataclass per agenti e Config.'},
+  {kw:'import pandas as pd',                  nl:'export-world', desc:'Opzionale — per salvare dati come CSV.'},
+];
+
+// ══════════════════════════════════════════════════════════════════
+// BUILD
+// ══════════════════════════════════════════════════════════════════
+function cm(c){ return c.replace(/(#[^\n]*)/g,'<span class="cm">$1</span>'); }
+
+function makeEntry(d){
+  const el = document.createElement('div');
+  el.className = 'entry';
+  el.id = 'e-' + d.id;
+  el.innerHTML = `
+    <div class="entry-head" onclick="tog(this.parentElement)">
+      <code class="entry-name">${d.name}</code>
+      <span class="entry-nl">(${d.nl})</span>
+      <span class="entry-desc">${d.desc}</span>
+      <span class="chev">&#9660;</span>
+    </div>
+    <div class="entry-body">
+      <div class="s-head">
+        <div class="sh-nl">NetLogo</div>
+        <div class="sh-py">Python</div>
+      </div>
+      <div class="sbside">
+        <div class="s-nl"><pre>${d.code_nl}</pre></div>
+        <div class="s-py"><pre>${cm(d.code_py)}</pre></div>
+      </div>
+      ${d.note ? `<div class="entry-note">${d.note}</div>` : ''}
+    </div>`;
+  return el;
+}
+
+function tog(e){ e.classList.toggle('open'); }
+
+const CATS = ['agenti','spazio','movimento','interaz','tempo','controllo','dati','liste','math','casuale','io'];
+CATS.forEach(cat => {
+  const box = document.getElementById('body-' + cat);
+  if(!box) return;
+  DATA.filter(d => d.cat === cat).forEach(d => box.appendChild(makeEntry(d)));
+});
+
+document.getElementById('kw-grid').innerHTML =
+  KEYWORDS.map(k=>`<div class="kw-card">
+    <code>${k.kw}</code>
+    <p><strong style="color:var(--nl-b);font-size:11px">NetLogo: ${k.nl}</strong><br>${k.desc}</p>
+  </div>`).join('');
+
+document.getElementById('builtin-grid').innerHTML =
+  BUILTINS.map(k=>`<div class="kw-card">
+    <code>${k.kw}</code>
+    <p><strong style="color:var(--nl-b);font-size:11px">NetLogo: ${k.nl}</strong><br>${k.desc}</p>
+  </div>`).join('');
+
+document.getElementById('imp-grid').innerHTML =
+  IMPORTS.map(k=>`<div class="imp-card">
+    <code>${k.kw}</code>
+    <p><strong style="color:var(--nl-b);font-size:11px">Sostituisce: ${k.nl}</strong><br>${k.desc}</p>
+  </div>`).join('');
+
+function doSearch(){
+  const q = document.getElementById('search').value.toLowerCase().trim();
+  let n = 0;
+  document.querySelectorAll('.entry').forEach(el => {
+    const show = !q || el.textContent.toLowerCase().includes(q);
+    el.classList.toggle('hidden', !show);
+    if(show) n++;
+  });
+  document.getElementById('count').textContent = q ? n + ' risultati' : '';
+}
+</script>
+</body>
+</html>
